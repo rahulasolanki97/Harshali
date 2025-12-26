@@ -27,16 +27,152 @@
             overflow: hidden;
         }
 
+        .login-container {
+            max-width: 450px;
+            margin: 100px auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .login-btn, .signup-btn, .logout-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .login-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .signup-btn {
+            background: #ffd93d;
+            color: #333;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            width: auto;
+            padding: 10px 20px;
+            font-size: 0.9em;
+        }
+
+        .login-btn:hover, .signup-btn:hover, .logout-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .toggle-mode {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+
+        .toggle-mode a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .toggle-mode a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #ef4444;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ef4444;
+            display: none;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            color: #16a34a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #16a34a;
+            display: none;
+        }
+
         .header {
             background: linear-gradient(135deg, #ffd93d 0%, #ffaa00 100%);
             padding: 30px;
             text-align: center;
             color: #333;
+            position: relative;
         }
 
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
+        }
+
+        .user-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .username-display {
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: #333;
+            font-weight: bold;
         }
 
         .balance-display {
@@ -300,9 +436,19 @@
             background: #ef4444 !important;
         }
 
+        .hidden {
+            display: none;
+        }
+
         @media (max-width: 600px) {
             .header h1 {
                 font-size: 1.8em;
+            }
+
+            .user-info {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
             }
 
             .balance-amount {
@@ -326,10 +472,61 @@
 <body>
     <div class="storage-status" id="storageStatus"></div>
     
-    <div class="container">
+    <!-- Login/Signup Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-header">
+            <h1>💰</h1>
+            <h1>Expense Tracker</h1>
+            <p>Track your finances securely</p>
+        </div>
+        
+        <div class="error-message" id="authError"></div>
+        <div class="success-message" id="authSuccess"></div>
+        
+        <div id="loginForm">
+            <div class="form-group">
+                <label for="loginUsername">Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter your username" />
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" />
+            </div>
+            <button class="login-btn" onclick="login()">Login</button>
+            <div class="toggle-mode">
+                Don't have an account? <a href="#" onclick="showSignup(); return false;">Sign Up</a>
+            </div>
+        </div>
+        
+        <div id="signupForm" class="hidden">
+            <div class="form-group">
+                <label for="signupUsername">Username</label>
+                <input type="text" id="signupUsername" placeholder="Choose a username" />
+            </div>
+            <div class="form-group">
+                <label for="signupPassword">Password</label>
+                <input type="password" id="signupPassword" placeholder="Choose a password (min 6 characters)" />
+            </div>
+            <div class="form-group">
+                <label for="signupPasswordConfirm">Confirm Password</label>
+                <input type="password" id="signupPasswordConfirm" placeholder="Confirm your password" />
+            </div>
+            <button class="signup-btn" onclick="signup()">Sign Up</button>
+            <div class="toggle-mode">
+                Already have an account? <a href="#" onclick="showLogin(); return false;">Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Screen -->
+    <div class="container hidden" id="appScreen">
         <div class="header">
             <h1>💰 Expense Tracker</h1>
             <p>Manage your daily finances</p>
+            <div class="user-info">
+                <span class="username-display" id="currentUsername"></span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
         </div>
 
         <div class="balance-display">
@@ -443,7 +640,7 @@
     </div>
 
     <script>
-        // Storage management with fallback
+        // Storage management
         const StorageManager = {
             isAvailable: false,
             
@@ -462,16 +659,12 @@
             },
             
             save(key, data) {
-                if (!this.isAvailable) {
-                    console.warn('Storage not available');
-                    return false;
-                }
+                if (!this.isAvailable) return false;
                 try {
                     localStorage.setItem(key, JSON.stringify(data));
                     return true;
                 } catch (e) {
                     console.error('Failed to save data:', e);
-                    showStatus('Failed to save data', true);
                     return false;
                 }
             },
@@ -491,30 +684,170 @@
         // Initialize storage
         StorageManager.init();
 
-        // App state
+        // Authentication state
+        let currentUser = null;
         let transactions = [];
         let balance = 0;
 
-        // Load data on startup
-        function loadData() {
-            const savedTransactions = StorageManager.load('transactions');
-            const savedBalance = StorageManager.load('balance');
+        // Show/hide screens
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+            clearAuthMessages();
+        }
+
+        function showSignup() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('hidden');
+            clearAuthMessages();
+        }
+
+        function clearAuthMessages() {
+            document.getElementById('authError').style.display = 'none';
+            document.getElementById('authSuccess').style.display = 'none';
+        }
+
+        function showAuthError(message) {
+            const errorEl = document.getElementById('authError');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            document.getElementById('authSuccess').style.display = 'none';
+        }
+
+        function showAuthSuccess(message) {
+            const successEl = document.getElementById('authSuccess');
+            successEl.textContent = message;
+            successEl.style.display = 'block';
+            document.getElementById('authError').style.display = 'none';
+        }
+
+        // Signup
+        function signup() {
+            const username = document.getElementById('signupUsername').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupPasswordConfirm').value;
+
+            if (!username || !password) {
+                showAuthError('Please fill in all fields');
+                return;
+            }
+
+            if (username.length < 3) {
+                showAuthError('Username must be at least 3 characters');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAuthError('Password must be at least 6 characters');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAuthError('Passwords do not match');
+                return;
+            }
+
+            // Check if user already exists
+            const users = StorageManager.load('users') || {};
+            if (users[username]) {
+                showAuthError('Username already exists');
+                return;
+            }
+
+            // Create new user
+            users[username] = {
+                password: password, // In real app, this should be hashed!
+                createdAt: new Date().toISOString()
+            };
+
+            StorageManager.save('users', users);
+            showAuthSuccess('Account created successfully! You can now login.');
             
-            if (savedTransactions) {
-                transactions = savedTransactions;
+            // Clear form
+            document.getElementById('signupUsername').value = '';
+            document.getElementById('signupPassword').value = '';
+            document.getElementById('signupPasswordConfirm').value = '';
+            
+            // Switch to login after 2 seconds
+            setTimeout(() => {
+                showLogin();
+            }, 2000);
+        }
+
+        // Login
+        function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                showAuthError('Please enter username and password');
+                return;
             }
-            if (savedBalance !== null) {
-                balance = savedBalance;
+
+            const users = StorageManager.load('users') || {};
+            const user = users[username];
+
+            if (!user || user.password !== password) {
+                showAuthError('Invalid username or password');
+                return;
             }
+
+            // Login successful
+            currentUser = username;
+            StorageManager.save('currentUser', username);
+            
+            // Clear form
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            
+            // Show app
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appScreen').classList.remove('hidden');
+            document.getElementById('currentUsername').textContent = username;
+            
+            loadUserData();
+            showStatus('Welcome back, ' + username + '!');
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                currentUser = null;
+                localStorage.removeItem('currentUser');
+                
+                document.getElementById('appScreen').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+                showLogin();
+            }
+        }
+
+        // Load user data
+        function loadUserData() {
+            if (!currentUser) return;
+            
+            const userKey = `user_${currentUser}`;
+            const userData = StorageManager.load(userKey) || {
+                transactions: [],
+                balance: 0
+            };
+            
+            transactions = userData.transactions || [];
+            balance = userData.balance || 0;
             
             updateDisplay();
         }
 
-        // Save data
-        function saveData() {
-            const success = StorageManager.save('transactions', transactions) && 
-                          StorageManager.save('balance', balance);
+        // Save user data
+        function saveUserData() {
+            if (!currentUser) return;
             
+            const userKey = `user_${currentUser}`;
+            const userData = {
+                transactions: transactions,
+                balance: balance
+            };
+            
+            const success = StorageManager.save(userKey, userData);
             if (success) {
                 showStatus('Data saved successfully!');
             }
@@ -560,11 +893,10 @@
                 balance -= amount;
             }
 
-            // Clear inputs
             document.getElementById('description').value = '';
             document.getElementById('amount').value = '';
 
-            saveData();
+            saveUserData();
             updateDisplay();
         }
 
@@ -581,7 +913,7 @@
 
             transactions = transactions.filter(t => t.id !== id);
             
-            saveData();
+            saveUserData();
             updateDisplay();
         }
 
@@ -668,15 +1000,23 @@
             }).join('');
         }
 
-        // Initialize app
-        loadData();
-
-        // Show storage status on load
-        if (StorageManager.isAvailable) {
-            showStatus('Data will be saved automatically');
-        } else {
-            showStatus('Warning: Data will not persist on refresh', true);
+        // Check if user is already logged in
+        function checkLogin() {
+            const savedUser = StorageManager.load('currentUser');
+            if (savedUser) {
+                const users = StorageManager.load('users') || {};
+                if (users[savedUser]) {
+                    currentUser = savedUser;
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('appScreen').classList.remove('hidden');
+                    document.getElementById('currentUsername').textContent = savedUser;
+                    loadUserData();
+                }
+            }
         }
+
+        // Initialize app
+        checkLogin();
     </script>
 </body>
 </html>
