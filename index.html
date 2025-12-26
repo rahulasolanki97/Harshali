@@ -427,14 +427,16 @@
         let balance = 0;
         let transactions = [];
 
-        // Load data from persistent storage on startup
-        async function loadData() {
+        // Load data from localStorage on startup
+        function loadData() {
             try {
-                const result = await window.storage.get('expense-data');
-                if (result && result.value) {
-                    const data = JSON.parse(result.value);
+                const savedData = localStorage.getItem('expense-tracker-data');
+                
+                if (savedData) {
+                    const data = JSON.parse(savedData);
                     balance = data.balance || 0;
                     transactions = data.transactions || [];
+                    
                     // Convert timestamp strings back to Date objects
                     transactions = transactions.map(t => ({
                         ...t,
@@ -442,7 +444,7 @@
                     }));
                 }
             } catch (error) {
-                console.log('No previous data found, starting fresh');
+                console.error('Error loading data:', error);
             }
             
             updateBalance();
@@ -450,17 +452,18 @@
             renderTransactions();
         }
 
-        // Save data to persistent storage
-        async function saveData() {
+        // Save data to localStorage
+        function saveData() {
             try {
                 const data = {
                     balance: balance,
                     transactions: transactions
                 };
-                await window.storage.set('expense-data', JSON.stringify(data));
-                console.log('Data saved successfully');
+                localStorage.setItem('expense-tracker-data', JSON.stringify(data));
+                console.log('Data saved successfully!');
             } catch (error) {
                 console.error('Failed to save data:', error);
+                alert('Failed to save data. Your browser may have storage disabled.');
             }
         }
 
@@ -627,7 +630,7 @@
         }
 
         // Load data when page loads
-        loadData();
+        window.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
 </html>
