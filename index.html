@@ -430,18 +430,42 @@
         // Load data from localStorage on startup
         function loadData() {
             try {
-                const savedData = localStorage.getItem('expense-tracker-data');
+                // Try to load from the OLD storage keys first (for migration)
+                const oldBalance = localStorage.getItem('expenseTrackerBalance');
+                const oldTransactions = localStorage.getItem('expenseTrackerTransactions');
                 
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    balance = data.balance || 0;
-                    transactions = data.transactions || [];
+                if (oldBalance && oldTransactions) {
+                    console.log('Found old data, migrating...');
+                    balance = parseFloat(oldBalance);
+                    transactions = JSON.parse(oldTransactions);
                     
                     // Convert timestamp strings back to Date objects
                     transactions = transactions.map(t => ({
                         ...t,
                         timestamp: new Date(t.timestamp)
                     }));
+                    
+                    // Save to new format and remove old keys
+                    saveData();
+                    localStorage.removeItem('expenseTrackerBalance');
+                    localStorage.removeItem('expenseTrackerTransactions');
+                    console.log('Migration complete!');
+                } else {
+                    // Try new storage format
+                    const savedData = localStorage.getItem('expense-tracker-data');
+                    
+                    if (savedData) {
+                        const data = JSON.parse(savedData);
+                        balance = data.balance || 0;
+                        transactions = data.transactions || [];
+                        
+                        // Convert timestamp strings back to Date objects
+                        transactions = transactions.map(t => ({
+                            ...t,
+                            timestamp: new Date(t.timestamp)
+                        }));
+                        console.log('Data loaded successfully!');
+                    }
                 }
             } catch (error) {
                 console.error('Error loading data:', error);
