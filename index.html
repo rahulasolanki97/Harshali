@@ -116,7 +116,7 @@
 
         .toggle-mode {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 15px;
             color: #666;
         }
 
@@ -670,7 +670,6 @@
     </div>
 
     <script>
-        // Storage management
         const StorageManager = {
             isAvailable: false,
             
@@ -711,15 +710,12 @@
             }
         };
 
-        // Initialize storage
         StorageManager.init();
 
-        // Authentication state
         let currentUser = null;
         let transactions = [];
         let balance = 0;
 
-        // Show/hide screens
         function showLogin() {
             document.getElementById('loginForm').classList.remove('hidden');
             document.getElementById('signupForm').classList.add('hidden');
@@ -760,7 +756,6 @@
             document.getElementById('authError').style.display = 'none';
         }
 
-        // Signup
         function signup() {
             const username = document.getElementById('signupUsername').value.trim();
             const password = document.getElementById('signupPassword').value;
@@ -786,14 +781,12 @@
                 return;
             }
 
-            // Check if user already exists
             const users = StorageManager.load('users') || {};
             if (users[username]) {
                 showAuthError('Username already exists');
                 return;
             }
 
-            // Create new user
             users[username] = {
                 password: password,
                 createdAt: new Date().toISOString()
@@ -802,18 +795,15 @@
             StorageManager.save('users', users);
             showAuthSuccess('Account created successfully! You can now login.');
             
-            // Clear form
             document.getElementById('signupUsername').value = '';
             document.getElementById('signupPassword').value = '';
             document.getElementById('signupPasswordConfirm').value = '';
             
-            // Switch to login after 2 seconds
             setTimeout(() => {
                 showLogin();
             }, 2000);
         }
 
-        // Reset Password
         function resetPassword() {
             const username = document.getElementById('resetUsername').value.trim();
             const newPassword = document.getElementById('newPassword').value;
@@ -834,31 +824,26 @@
                 return;
             }
 
-            // Check if user exists
             const users = StorageManager.load('users') || {};
             if (!users[username]) {
                 showAuthError('Username not found');
                 return;
             }
 
-            // Update password
             users[username].password = newPassword;
             StorageManager.save('users', users);
             
             showAuthSuccess('Password reset successfully! You can now login with your new password.');
             
-            // Clear form
             document.getElementById('resetUsername').value = '';
             document.getElementById('newPassword').value = '';
             document.getElementById('newPasswordConfirm').value = '';
             
-            // Switch to login after 2 seconds
             setTimeout(() => {
                 showLogin();
             }, 2000);
         }
 
-        // Login
         function login() {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -876,15 +861,12 @@
                 return;
             }
 
-            // Login successful
             currentUser = username;
             StorageManager.save('currentUser', username);
             
-            // Clear form
             document.getElementById('loginUsername').value = '';
             document.getElementById('loginPassword').value = '';
             
-            // Show app
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('appScreen').classList.remove('hidden');
             document.getElementById('currentUsername').textContent = username;
@@ -893,7 +875,6 @@
             showStatus('Welcome back, ' + username + '!');
         }
 
-        // Logout
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 currentUser = null;
@@ -905,7 +886,6 @@
             }
         }
 
-        // Load user data
         function loadUserData() {
             if (!currentUser) return;
             
@@ -921,7 +901,6 @@
             updateDisplay();
         }
 
-        // Save user data
         function saveUserData() {
             if (!currentUser) return;
             
@@ -937,7 +916,6 @@
             }
         }
 
-        // Show status message
         function showStatus(message, isError = false) {
             const statusEl = document.getElementById('storageStatus');
             statusEl.textContent = message;
@@ -949,7 +927,6 @@
             }, 3000);
         }
 
-        // Add transaction
         function addTransaction(type) {
             const description = document.getElementById('description').value.trim();
             const amount = parseFloat(document.getElementById('amount').value);
@@ -984,7 +961,6 @@
             updateDisplay();
         }
 
-        // Delete transaction
         function deleteTransaction(id) {
             const transaction = transactions.find(t => t.id === id);
             if (!transaction) return;
@@ -1001,19 +977,16 @@
             updateDisplay();
         }
 
-        // Update display
         function updateDisplay() {
             updateBalance();
             updateSummaries();
             updateTransactionList();
         }
 
-        // Update balance
         function updateBalance() {
             document.getElementById('balance').textContent = `₹${balance.toFixed(2)}`;
         }
 
-        // Calculate summaries
         function updateSummaries() {
             const now = new Date();
             const periods = {
@@ -1041,63 +1014,4 @@
                     }
                 });
 
-                const net = income - expense;
-
-                document.getElementById(`${period}Income`).textContent = `₹${income.toFixed(2)}`;
-                document.getElementById(`${period}Expense`).textContent = `₹${expense.toFixed(2)}`;
-                document.getElementById(`${period}Net`).textContent = `₹${net.toFixed(2)}`;
-            });
-        }
-
-        // Update transaction list
-        function updateTransactionList() {
-            const listEl = document.getElementById('transactionList');
-            
-            if (transactions.length === 0) {
-                listEl.innerHTML = '<div class="empty-state">No transactions yet. Add your first transaction above!</div>';
-                return;
-            }
-
-            listEl.innerHTML = transactions.map(t => {
-                const date = new Date(t.date);
-                const dateStr = date.toLocaleDateString('en-IN', { 
-                    day: 'numeric', 
-                    month: 'short', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                return `
-                    <div class="transaction-item ${t.type}">
-                        <div class="transaction-details">
-                            <div class="transaction-description">${t.description}</div>
-                            <div class="transaction-category">${t.category}</div>
-                            <div class="transaction-date">${dateStr}</div>
-                        </div>
-                        <div class="transaction-amount ${t.type}">
-                            ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
-                        </div>
-                        <button class="delete-btn" onclick="deleteTransaction(${t.id})">Delete</button>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Check if user is already logged in
-        function checkLogin() {
-            const savedUser = StorageManager.load('currentUser');
-            if (savedUser) {
-                const users = StorageManager.load('users') || {};
-                if (users[savedUser]) {
-                    currentUser = savedUser;
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('appScreen').classList.remove('hidden');
-                    document.getElementById('currentUsername').textContent = savedUser;
-                    loadUserData();
-                }
-            }
-        }
-
-        // Initialize app
-        checkLogin();
+                const net = income -
