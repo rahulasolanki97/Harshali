@@ -427,18 +427,18 @@
         let balance = 0;
         let transactions = [];
 
-        // Load data from persistent storage on startup
-        async function loadData() {
+        // Load data from localStorage on startup
+        function loadData() {
             try {
-                const balanceResult = await window.storage.get('balance');
-                const transactionsResult = await window.storage.get('transactions');
+                const savedBalance = localStorage.getItem('expenseTrackerBalance');
+                const savedTransactions = localStorage.getItem('expenseTrackerTransactions');
                 
-                if (balanceResult) {
-                    balance = parseFloat(balanceResult.value);
+                if (savedBalance) {
+                    balance = parseFloat(savedBalance);
                 }
                 
-                if (transactionsResult) {
-                    transactions = JSON.parse(transactionsResult.value);
+                if (savedTransactions) {
+                    transactions = JSON.parse(savedTransactions);
                     // Convert timestamp strings back to Date objects
                     transactions = transactions.map(t => ({
                         ...t,
@@ -454,11 +454,11 @@
             }
         }
 
-        // Save data to persistent storage
-        async function saveData() {
+        // Save data to localStorage
+        function saveData() {
             try {
-                await window.storage.set('balance', balance.toString());
-                await window.storage.set('transactions', JSON.stringify(transactions));
+                localStorage.setItem('expenseTrackerBalance', balance.toString());
+                localStorage.setItem('expenseTrackerTransactions', JSON.stringify(transactions));
             } catch (error) {
                 console.error('Failed to save data:', error);
             }
