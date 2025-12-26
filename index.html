@@ -1,637 +1,215 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Expense Tracker</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<script>
+    let balance = 0;
+    let transactions = [];
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #ffd93d 0%, #ffaa00 100%);
-            padding: 30px;
-            text-align: center;
-            color: #333;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .balance-display {
-            background: #2563eb;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .balance-amount {
-            font-size: 3em;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .balance-label {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .summary-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 30px;
-            background: #f8f9fa;
-        }
-
-        .summary-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-left: 5px solid #2563eb;
-        }
-
-        .summary-card.daily {
-            border-left-color: #ffd93d;
-        }
-
-        .summary-card.weekly {
-            border-left-color: #2563eb;
-        }
-
-        .summary-card.monthly {
-            border-left-color: #8b5cf6;
-        }
-
-        .summary-card.yearly {
-            border-left-color: #f59e0b;
-        }
-
-        .summary-title {
-            font-size: 1.1em;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .summary-stats {
-            margin-top: 10px;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            font-size: 0.95em;
-        }
-
-        .stat-label {
-            color: #666;
-        }
-
-        .stat-value {
-            font-weight: bold;
-        }
-
-        .stat-value.income {
-            color: #16a34a;
-        }
-
-        .stat-value.expense {
-            color: #ef4444;
-        }
-
-        .stat-value.total {
-            color: #2563eb;
-            font-size: 1.3em;
-        }
-
-        .input-section {
-            padding: 30px;
-            background: #f8f9fa;
-        }
-
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .input-group input,
-        .input-group select {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1em;
-            min-width: 150px;
-        }
-
-        .input-group input:focus,
-        .input-group select:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        button {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        .add-money-btn {
-            background: #ffd93d;
-            color: #333;
-        }
-
-        .add-expense-btn {
-            background: #2563eb;
-            color: white;
-        }
-
-        .transactions-section {
-            padding: 30px;
-        }
-
-        .transactions-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .transactions-header h2 {
-            color: #333;
-        }
-
-        .transaction-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .transaction-item {
-            background: white;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 10px;
-            border-left: 4px solid #2563eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .transaction-item.income {
-            border-left-color: #ffd93d;
-            background: #fffbeb;
-        }
-
-        .transaction-item.expense {
-            border-left-color: #ef4444;
-            background: #fef2f2;
-        }
-
-        .transaction-details {
-            flex: 1;
-        }
-
-        .transaction-description {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .transaction-category {
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .transaction-date {
-            font-size: 0.8em;
-            color: #999;
-        }
-
-        .transaction-amount {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-left: 20px;
-        }
-
-        .transaction-amount.income {
-            color: #16a34a;
-        }
-
-        .transaction-amount.expense {
-            color: #ef4444;
-        }
-
-        .delete-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-left: 10px;
-            font-size: 0.8em;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
-        @media (max-width: 600px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .balance-amount {
-                font-size: 2em;
-            }
-
-            .input-group {
-                flex-direction: column;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            .summary-section {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>💰 Expense Tracker</h1>
-            <p>Manage your daily finances</p>
-        </div>
-
-        <div class="balance-display">
-            <div class="balance-label">Current Balance</div>
-            <div class="balance-amount" id="balance">₹0.00</div>
-        </div>
-
-        <div class="summary-section">
-            <div class="summary-card daily">
-                <div class="summary-title">📅 Daily Summary (Today)</div>
-                <div class="summary-stats">
-                    <div class="stat-row">
-                        <span class="stat-label">Income:</span>
-                        <span class="stat-value income" id="dailyIncome">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Expenses:</span>
-                        <span class="stat-value expense" id="dailyExpense">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Net:</span>
-                        <span class="stat-value total" id="dailyNet">₹0.00</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="summary-card weekly">
-                <div class="summary-title">📊 Weekly Summary (Last 7 Days)</div>
-                <div class="summary-stats">
-                    <div class="stat-row">
-                        <span class="stat-label">Income:</span>
-                        <span class="stat-value income" id="weeklyIncome">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Expenses:</span>
-                        <span class="stat-value expense" id="weeklyExpense">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Net:</span>
-                        <span class="stat-value total" id="weeklyNet">₹0.00</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="summary-card monthly">
-                <div class="summary-title">📈 Monthly Summary (Last 30 Days)</div>
-                <div class="summary-stats">
-                    <div class="stat-row">
-                        <span class="stat-label">Income:</span>
-                        <span class="stat-value income" id="monthlyIncome">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Expenses:</span>
-                        <span class="stat-value expense" id="monthlyExpense">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Net:</span>
-                        <span class="stat-value total" id="monthlyNet">₹0.00</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="summary-card yearly">
-                <div class="summary-title">📆 Yearly Summary (Last 365 Days)</div>
-                <div class="summary-stats">
-                    <div class="stat-row">
-                        <span class="stat-label">Income:</span>
-                        <span class="stat-value income" id="yearlyIncome">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Expenses:</span>
-                        <span class="stat-value expense" id="yearlyExpense">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Net:</span>
-                        <span class="stat-value total" id="yearlyNet">₹0.00</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="input-section">
-            <div class="input-group">
-                <input type="text" id="description" placeholder="Description" />
-                <input type="number" id="amount" placeholder="Amount" step="0.01" />
-                <select id="category">
-                    <option value="Food">Food</option>
-                    <option value="Transport">Transport</option>
-                    <option value="Shopping">Shopping</option>
-                    <option value="Bills">Bills</option>
-                    <option value="Entertainment">Entertainment</option>
-                    <option value="Health">Health</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="button-group">
-                <button class="add-money-btn" onclick="addMoney()">+ Add Money</button>
-                <button class="add-expense-btn" onclick="addExpense()">- Add Expense</button>
-            </div>
-        </div>
-
-        <div class="transactions-section">
-            <div class="transactions-header">
-                <h2>Transactions</h2>
-            </div>
-            <div class="transaction-list" id="transactionList">
-                <div class="empty-state">
-                    No transactions yet. Start adding money or expenses!
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let balance = 0;
-        let transactions = [];
-
-        // Load data from persistent storage on startup
-        async function loadData() {
-            try {
-                const result = await window.storage.get('expense-data');
+    // Load data from localStorage on startup
+    function loadData() {
+        try {
+            const dataString = localStorage.getItem('expense-data');
+            if (dataString) {
+                const data = JSON.parse(dataString);
+                balance = data.balance || 0;
+                transactions = data.transactions || [];
                 
-                if (result && result.value) {
-                    const data = JSON.parse(result.value);
-                    balance = data.balance || 0;
-                    transactions = data.transactions || [];
-                    
-                    // Convert timestamp strings back to Date objects
-                    transactions = transactions.map(t => ({
-                        ...t,
-                        timestamp: new Date(t.timestamp)
-                    }));
-                    console.log('Data loaded successfully!');
-                }
-            } catch (error) {
-                console.log('No previous data found, starting fresh');
+                // Convert timestamp strings back to Date objects
+                transactions = transactions.map(t => ({
+                    ...t,
+                    timestamp: new Date(t.timestamp)
+                }));
+                console.log('Data loaded successfully!');
             }
-            
+        } catch (error) {
+            console.log('No previous data found or parse error, starting fresh');
+            balance = 0;
+            transactions = [];
+        }
+        
+        updateBalance();
+        calculateSummaries();
+        renderTransactions();
+    }
+
+    // Save data to localStorage
+    function saveData() {
+        try {
+            const data = {
+                balance: balance,
+                transactions: transactions.map(t => ({
+                    ...t,
+                    timestamp: t.timestamp.toISOString() // Convert Date back to string for storage
+                }))
+            };
+            localStorage.setItem('expense-data', JSON.stringify(data));
+            console.log('Data saved successfully!');
+        } catch (error) {
+            console.error('Failed to save data:', error);
+            alert('Failed to save data. Please try again.');
+        }
+    }
+
+    function updateBalance() {
+        document.getElementById('balance').textContent = '₹' + balance.toFixed(2);
+    }
+
+    function calculateSummaries() {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+        const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+        const yearAgo = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000);
+
+        let dailyIncome = 0, dailyExpense = 0;
+        let weeklyIncome = 0, weeklyExpense = 0;
+        let monthlyIncome = 0, monthlyExpense = 0;
+        let yearlyIncome = 0, yearlyExpense = 0;
+
+        transactions.forEach((t) => {
+            const transactionDate = new Date(t.timestamp);
+            // Daily
+            if (transactionDate >= today) {
+                if (t.type === 'income') dailyIncome += t.amount;
+                else dailyExpense += t.amount;
+            }
+            // Weekly
+            if (transactionDate >= weekAgo) {
+                if (t.type === 'income') weeklyIncome += t.amount;
+                else weeklyExpense += t.amount;
+            }
+            // Monthly
+            if (transactionDate >= monthAgo) {
+                if (t.type === 'income') monthlyIncome += t.amount;
+                else monthlyExpense += t.amount;
+            }
+            // Yearly
+            if (transactionDate >= yearAgo) {
+                if (t.type === 'income') yearlyIncome += t.amount;
+                else yearlyExpense += t.amount;
+            }
+        });
+
+        // Update daily
+        document.getElementById('dailyIncome').textContent = '₹' + dailyIncome.toFixed(2);
+        document.getElementById('dailyExpense').textContent = '₹' + dailyExpense.toFixed(2);
+        document.getElementById('dailyNet').textContent = '₹' + (dailyIncome - dailyExpense).toFixed(2);
+
+        // Update weekly
+        document.getElementById('weeklyIncome').textContent = '₹' + weeklyIncome.toFixed(2);
+        document.getElementById('weeklyExpense').textContent = '₹' + weeklyExpense.toFixed(2);
+        document.getElementById('weeklyNet').textContent = '₹' + (weeklyIncome - weeklyExpense).toFixed(2);
+
+        // Update monthly
+        document.getElementById('monthlyIncome').textContent = '₹' + monthlyIncome.toFixed(2);
+        document.getElementById('monthlyExpense').textContent = '₹' + monthlyExpense.toFixed(2);
+        document.getElementById('monthlyNet').textContent = '₹' + (monthlyIncome - monthlyExpense).toFixed(2);
+
+        // Update yearly
+        document.getElementById('yearlyIncome').textContent = '₹' + yearlyIncome.toFixed(2);
+        document.getElementById('yearlyExpense').textContent = '₹' + yearlyExpense.toFixed(2);
+        document.getElementById('yearlyNet').textContent = '₹' + (yearlyIncome - yearlyExpense).toFixed(2);
+    }
+
+    function addMoney() {
+        const description = document.getElementById('description').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+
+        if (!description || !amount || amount <= 0) {
+            alert('Please enter a valid description and amount');
+            return;
+        }
+
+        balance += amount;
+        transactions.push({
+            id: Date.now(),
+            type: 'income',
+            description: description,
+            amount: amount,
+            category: 'Income',
+            date: new Date().toLocaleDateString('en-IN'),
+            timestamp: new Date(),
+        });
+
+        updateBalance();
+        calculateSummaries();
+        renderTransactions();
+        clearInputs();
+        saveData();
+    }
+
+    function addExpense() {
+        const description = document.getElementById('description').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+        const category = document.getElementById('category').value;
+
+        if (!description || !amount || amount <= 0) {
+            alert('Please enter a valid description and amount');
+            return;
+        }
+
+        balance -= amount;
+        transactions.push({
+            id: Date.now(),
+            type: 'expense',
+            description: description,
+            amount: amount,
+            category: category,
+            date: new Date().toLocaleDateString('en-IN'),
+            timestamp: new Date(),
+        });
+
+        updateBalance();
+        calculateSummaries();
+        renderTransactions();
+        clearInputs();
+        saveData();
+    }
+
+    function deleteTransaction(id) {
+        const transaction = transactions.find((t) => t.id === id);
+        if (transaction) {
+            if (transaction.type === 'income') {
+                balance -= transaction.amount;
+            } else {
+                balance += transaction.amount;
+            }
+            transactions = transactions.filter((t) => t.id !== id);
             updateBalance();
             calculateSummaries();
             renderTransactions();
-        }
-
-        // Save data to persistent storage
-        async function saveData() {
-            try {
-                const data = {
-                    balance: balance,
-                    transactions: transactions
-                };
-                await window.storage.set('expense-data', JSON.stringify(data));
-                console.log('Data saved successfully!');
-            } catch (error) {
-                console.error('Failed to save data:', error);
-                alert('Failed to save data. Please try again.');
-            }
-        }
-
-        function updateBalance() {
-            document.getElementById('balance').textContent = '₹' + balance.toFixed(2);
-        }
-
-        function calculateSummaries() {
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-            const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-            const yearAgo = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000);
-
-            let dailyIncome = 0, dailyExpense = 0;
-            let weeklyIncome = 0, weeklyExpense = 0;
-            let monthlyIncome = 0, monthlyExpense = 0;
-            let yearlyIncome = 0, yearlyExpense = 0;
-
-            transactions.forEach((t) => {
-                const transactionDate = new Date(t.timestamp);
-                // Daily
-                if (transactionDate >= today) {
-                    if (t.type === 'income') dailyIncome += t.amount;
-                    else dailyExpense += t.amount;
-                }
-                // Weekly
-                if (transactionDate >= weekAgo) {
-                    if (t.type === 'income') weeklyIncome += t.amount;
-                    else weeklyExpense += t.amount;
-                }
-                // Monthly
-                if (transactionDate >= monthAgo) {
-                    if (t.type === 'income') monthlyIncome += t.amount;
-                    else monthlyExpense += t.amount;
-                }
-                // Yearly
-                if (transactionDate >= yearAgo) {
-                    if (t.type === 'income') yearlyIncome += t.amount;
-                    else yearlyExpense += t.amount;
-                }
-            });
-
-            // Update daily
-            document.getElementById('dailyIncome').textContent = '₹' + dailyIncome.toFixed(2);
-            document.getElementById('dailyExpense').textContent = '₹' + dailyExpense.toFixed(2);
-            document.getElementById('dailyNet').textContent = '₹' + (dailyIncome - dailyExpense).toFixed(2);
-
-            // Update weekly
-            document.getElementById('weeklyIncome').textContent = '₹' + weeklyIncome.toFixed(2);
-            document.getElementById('weeklyExpense').textContent = '₹' + weeklyExpense.toFixed(2);
-            document.getElementById('weeklyNet').textContent = '₹' + (weeklyIncome - weeklyExpense).toFixed(2);
-
-            // Update monthly
-            document.getElementById('monthlyIncome').textContent = '₹' + monthlyIncome.toFixed(2);
-            document.getElementById('monthlyExpense').textContent = '₹' + monthlyExpense.toFixed(2);
-            document.getElementById('monthlyNet').textContent = '₹' + (monthlyIncome - monthlyExpense).toFixed(2);
-
-            // Update yearly
-            document.getElementById('yearlyIncome').textContent = '₹' + yearlyIncome.toFixed(2);
-            document.getElementById('yearlyExpense').textContent = '₹' + yearlyExpense.toFixed(2);
-            document.getElementById('yearlyNet').textContent = '₹' + (yearlyIncome - yearlyExpense).toFixed(2);
-        }
-
-        function addMoney() {
-            const description = document.getElementById('description').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-
-            if (!description || !amount || amount <= 0) {
-                alert('Please enter a valid description and amount');
-                return;
-            }
-
-            balance += amount;
-            transactions.push({
-                id: Date.now(),
-                type: 'income',
-                description: description,
-                amount: amount,
-                category: 'Income',
-                date: new Date().toLocaleDateString('en-IN'),
-                timestamp: new Date(),
-            });
-
-            updateBalance();
-            calculateSummaries();
-            renderTransactions();
-            clearInputs();
             saveData();
         }
+    }
 
-        function addExpense() {
-            const description = document.getElementById('description').value;
-            const amount = parseFloat(document.getElementById('amount').value);
-            const category = document.getElementById('category').value;
-
-            if (!description || !amount || amount <= 0) {
-                alert('Please enter a valid description and amount');
-                return;
-            }
-
-            balance -= amount;
-            transactions.push({
-                id: Date.now(),
-                type: 'expense',
-                description: description,
-                amount: amount,
-                category: category,
-                date: new Date().toLocaleDateString('en-IN'),
-                timestamp: new Date(),
-            });
-
-            updateBalance();
-            calculateSummaries();
-            renderTransactions();
-            clearInputs();
-            saveData();
+    function renderTransactions() {
+        const listElement = document.getElementById('transactionList');
+        if (transactions.length === 0) {
+            listElement.innerHTML = '<div class="empty-state">No transactions yet. Start adding money or expenses!</div>';
+            return;
         }
 
-        function deleteTransaction(id) {
-            const transaction = transactions.find((t) => t.id === id);
-            if (transaction) {
-                if (transaction.type === 'income') {
-                    balance -= transaction.amount;
-                } else {
-                    balance += transaction.amount;
-                }
-                transactions = transactions.filter((t) => t.id !== id);
-                updateBalance();
-                calculateSummaries();
-                renderTransactions();
-                saveData();
-            }
-        }
-
-        function renderTransactions() {
-            const listElement = document.getElementById('transactionList');
-            if (transactions.length === 0) {
-                listElement.innerHTML = '<div class="empty-state">No transactions yet. Start adding money or expenses!</div>';
-                return;
-            }
-
-            listElement.innerHTML = transactions
-                .map((t) => `
-                    <div class="transaction-item ${t.type}">
-                        <div class="transaction-details">
-                            <div class="transaction-description">${t.description}</div>
-                            <div class="transaction-category">${t.category}</div>
-                            <div class="transaction-date">${t.date}</div>
-                        </div>
-                        <div class="transaction-amount ${t.type}">
-                            ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
-                        </div>
-                        <button class="delete-btn" onclick="deleteTransaction(${t.id})">Delete</button>
+        listElement.innerHTML = transactions
+            .map((t) => `
+                <div class="transaction-item ${t.type}">
+                    <div class="transaction-details">
+                        <div class="transaction-description">${t.description}</div>
+                        <div class="transaction-category">${t.category}</div>
+                        <div class="transaction-date">${t.date}</div>
                     </div>
-                `)
-                .reverse()
-                .join('');
-        }
+                    <div class="transaction-amount ${t.type}">
+                        ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
+                    </div>
+                    <button class="delete-btn" onclick="deleteTransaction(${t.id})">Delete</button>
+                </div>
+            `)
+            .reverse()
+            .join('');
+    }
 
-        function clearInputs() {
-            document.getElementById('description').value = '';
-            document.getElementById('amount').value = '';
-        }
+    function clearInputs() {
+        document.getElementById('description').value = '';
+        document.getElementById('amount').value = '';
+        document.getElementById('category').selectedIndex = 0;
+    }
 
-        // Load data when page loads
-        window.addEventListener('DOMContentLoaded', loadData);
-    </script>
-</body>
-</html>
+    // Load data when page loads
+    window.addEventListener('DOMContentLoaded', loadData);
+</script>
