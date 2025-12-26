@@ -25,7 +25,7 @@
         h1 { text-align: center; color: #333; margin-bottom: 30px; }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 5px; color: #333; font-weight: bold; }
-        input, select { 
+        input { 
             width: 100%; 
             padding: 10px; 
             border: 2px solid #ddd; 
@@ -53,8 +53,8 @@
         .dashboard { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .dashboard h2 { color: #333; margin-bottom: 20px; }
         .user-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .balance { font-size: 24px; color: #2563eb; font-weight: bold; }
-        .logout-btn { width: 150px; background: #ef4444; }
+        .balance { font-size: 24px; color: #2563eb; font-weight: bold; margin-bottom: 20px; }
+        .logout-btn { width: 150px; background: #ef4444; margin-top: 0; }
         .transaction-list { margin-top: 20px; max-height: 300px; overflow-y: auto; }
         .transaction-item { 
             padding: 10px; 
@@ -64,7 +64,7 @@
             display: flex; 
             justify-content: space-between;
         }
-        .delete-btn { width: auto; padding: 5px 10px; background: #ef4444; font-size: 12px; }
+        .delete-btn { width: auto; padding: 5px 10px; background: #ef4444; font-size: 12px; margin-top: 0; }
     </style>
 </head>
 <body>
@@ -119,7 +119,7 @@
             </div>
             <div class="balance">Balance: ₹<span id="displayBalance">0.00</span></div>
             
-            <div class="form-group" style="margin-top: 20px;">
+            <div class="form-group">
                 <label>Description</label>
                 <input type="text" id="description" placeholder="What is this for?">
             </div>
@@ -137,27 +137,33 @@
     </div>
 
     <script>
-        // Simple Storage Manager
+        // Initialize App
+        function initApp() {
+            const saved = localStorage.getItem('appData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                window.users = data.users || {};
+                window.currentUser = data.currentUser;
+            } else {
+                window.users = {};
+                window.currentUser = null;
+            }
+            
+            if (window.currentUser) {
+                const user = window.users[window.currentUser];
+                window.transactions = user.transactions || [];
+                window.balance = user.balance || 0;
+                showDashboard();
+            }
+        }
+
         function saveData() {
-            const data = {
-                users: window.users || {},
-                currentUser: window.currentUser || null
-            };
-            localStorage.setItem('appData', JSON.stringify(data));
+            localStorage.setItem('appData', JSON.stringify({
+                users: window.users,
+                currentUser: window.currentUser
+            }));
         }
 
-        function loadData() {
-            const data = JSON.parse(localStorage.getItem('appData')) || { users: {}, currentUser: null };
-            window.users = data.users || {};
-            window.currentUser = data.currentUser;
-        }
-
-        // Initialize
-        loadData();
-        window.transactions = window.users[window.currentUser]?.transactions || [];
-        window.balance = window.users[window.currentUser]?.balance || 0;
-
-        // Show/Hide Functions
         function switchToSignup() {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('signupSection').classList.remove('hidden');
@@ -175,7 +181,6 @@
             setTimeout(() => { el.style.display = 'none'; }, 5000);
         }
 
-        // Signup Handler
         function handleSignup() {
             const username = document.getElementById('signupUser').value.trim();
             const password = document.getElementById('signupPass').value;
@@ -208,10 +213,13 @@
             document.getElementById('signupSuccess').textContent = 'Account created! Login now.';
             document.getElementById('signupSuccess').style.display = 'block';
             
+            document.getElementById('signupUser').value = '';
+            document.getElementById('signupPass').value = '';
+            document.getElementById('signupConfirm').value = '';
+            
             setTimeout(() => switchToLogin(), 2000);
         }
 
-        // Login Handler
         function handleLogin() {
             const username = document.getElementById('loginUser').value.trim();
             const password = document.getElementById('loginPass').value;
@@ -232,16 +240,21 @@
             window.balance = user.balance || 0;
             saveData();
 
-            // Show Dashboard
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
+            
+            showDashboard();
+        }
+
+        function showDashboard() {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('signupSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
-            document.getElementById('displayUser').textContent = username;
+            document.getElementById('displayUser').textContent = window.currentUser;
             updateBalance();
             showTransactions();
         }
 
-        // Logout Handler
         function handleLogout() {
             if (confirm('Logout?')) {
                 window.currentUser = null;
@@ -253,7 +266,6 @@
             }
         }
 
-        // Add Income
         function addIncome() {
             const desc = document.getElementById('description').value.trim();
             const amt = parseFloat(document.getElementById('amount').value);
@@ -264,7 +276,13 @@
             }
 
             window.balance += amt;
-            window.transactions.push({ type: 'income', description: desc, amount: amt, date: new Date().toLocaleDateString() });
+            window.transactions.push({ 
+                type: 'income', 
+                description: desc, 
+                amount: amt, 
+                date: new Date().toLocaleDateString() 
+            });
+            
             window.users[window.currentUser].balance = window.balance;
             window.users[window.currentUser].transactions = window.transactions;
             saveData();
@@ -275,7 +293,6 @@
             showTransactions();
         }
 
-        // Add Expense
         function addExpense() {
             const desc = document.getElementById('description').value.trim();
             const amt = parseFloat(document.getElementById('amount').value);
@@ -286,7 +303,13 @@
             }
 
             window.balance -= amt;
-            window.transactions.push({ type: 'expense', description: desc, amount: amt, date: new Date().toLocaleDateString() });
+            window.transactions.push({ 
+                type: 'expense', 
+                description: desc, 
+                amount: amt, 
+                date: new Date().toLocaleDateString() 
+            });
+            
             window.users[window.currentUser].balance = window.balance;
             window.users[window.currentUser].transactions = window.transactions;
             saveData();
@@ -297,12 +320,10 @@
             showTransactions();
         }
 
-        // Update Balance Display
         function updateBalance() {
             document.getElementById('displayBalance').textContent = window.balance.toFixed(2);
         }
 
-        // Show Transactions
         function showTransactions() {
             const container = document.getElementById('transactionContainer');
             if (window.transactions.length === 0) {
@@ -314,10 +335,10 @@
                 <div class="transaction-item">
                     <div>
                         <strong>${t.description}</strong><br>
-                        <small>${t.date}</small>
+                        <small style="color: #666;">${t.date}</small>
                     </div>
-                    <div>
-                        <span style="color: ${t.type === 'income' ? '#16a34a' : '#ef4444'}">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span style="color: ${t.type === 'income' ? '#16a34a' : '#ef4444'}; font-weight: bold;">
                             ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
                         </span>
                         <button class="delete-btn" onclick="deleteTransaction(${i})">Delete</button>
@@ -326,7 +347,6 @@
             `).join('');
         }
 
-        // Delete Transaction
         function deleteTransaction(index) {
             const t = window.transactions[index];
             if (t.type === 'income') {
@@ -341,6 +361,9 @@
             updateBalance();
             showTransactions();
         }
+
+        // Start app when page loads
+        window.addEventListener('load', initApp);
     </script>
 </body>
 </html>
