@@ -427,48 +427,25 @@
         let balance = 0;
         let transactions = [];
 
-        // Load data from localStorage on startup
-        function loadData() {
+        // Load data from persistent storage on startup
+        async function loadData() {
             try {
-                // Try to load from the OLD storage keys first (for migration)
-                const oldBalance = localStorage.getItem('expenseTrackerBalance');
-                const oldTransactions = localStorage.getItem('expenseTrackerTransactions');
+                const result = await window.storage.get('expense-data');
                 
-                if (oldBalance && oldTransactions) {
-                    console.log('Found old data, migrating...');
-                    balance = parseFloat(oldBalance);
-                    transactions = JSON.parse(oldTransactions);
+                if (result && result.value) {
+                    const data = JSON.parse(result.value);
+                    balance = data.balance || 0;
+                    transactions = data.transactions || [];
                     
                     // Convert timestamp strings back to Date objects
                     transactions = transactions.map(t => ({
                         ...t,
                         timestamp: new Date(t.timestamp)
                     }));
-                    
-                    // Save to new format and remove old keys
-                    saveData();
-                    localStorage.removeItem('expenseTrackerBalance');
-                    localStorage.removeItem('expenseTrackerTransactions');
-                    console.log('Migration complete!');
-                } else {
-                    // Try new storage format
-                    const savedData = localStorage.getItem('expense-tracker-data');
-                    
-                    if (savedData) {
-                        const data = JSON.parse(savedData);
-                        balance = data.balance || 0;
-                        transactions = data.transactions || [];
-                        
-                        // Convert timestamp strings back to Date objects
-                        transactions = transactions.map(t => ({
-                            ...t,
-                            timestamp: new Date(t.timestamp)
-                        }));
-                        console.log('Data loaded successfully!');
-                    }
+                    console.log('Data loaded successfully!');
                 }
             } catch (error) {
-                console.error('Error loading data:', error);
+                console.log('No previous data found, starting fresh');
             }
             
             updateBalance();
@@ -476,18 +453,18 @@
             renderTransactions();
         }
 
-        // Save data to localStorage
-        function saveData() {
+        // Save data to persistent storage
+        async function saveData() {
             try {
                 const data = {
                     balance: balance,
                     transactions: transactions
                 };
-                localStorage.setItem('expense-tracker-data', JSON.stringify(data));
+                await window.storage.set('expense-data', JSON.stringify(data));
                 console.log('Data saved successfully!');
             } catch (error) {
                 console.error('Failed to save data:', error);
-                alert('Failed to save data. Your browser may have storage disabled.');
+                alert('Failed to save data. Please try again.');
             }
         }
 
