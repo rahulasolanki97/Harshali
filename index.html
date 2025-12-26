@@ -1,313 +1,346 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Daily Expense Tracker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
-        .login-container {
-            max-width: 450px;
-            margin: 100px auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 40px;
-        }
-
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .login-header h1 {
-            font-size: 2.5em;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .login-header p {
-            color: #666;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1em;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-
-        .login-btn, .signup-btn, .logout-btn, .reset-btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-bottom: 10px;
-        }
-
-        .login-btn {
-            background: #2563eb;
-            color: white;
-        }
-
-        .signup-btn {
-            background: #ffd93d;
-            color: #333;
-        }
-
-        .reset-btn {
-            background: #10b981;
-            color: white;
-        }
-
-        .logout-btn {
-            background: #ef4444;
-            color: white;
-            width: auto;
-            padding: 10px 20px;
-            font-size: 0.9em;
-        }
-
-        .login-btn:hover, .signup-btn:hover, .logout-btn:hover, .reset-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .toggle-mode {
-            text-align: center;
-            margin-top: 15px;
-            color: #666;
-        }
-
-        .toggle-mode a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .toggle-mode a:hover {
-            text-decoration: underline;
-        }
-
-        .error-message {
-            background: #fef2f2;
-            color: #ef4444;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #ef4444;
-            display: none;
-        }
-
-        .success-message {
-            background: #f0fdf4;
-            color: #16a34a;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #16a34a;
-            display: none;
-        }
-
-        .header {
-            background: linear-gradient(135deg, #ffd93d 0%, #ffaa00 100%);
-            padding: 30px;
-            text-align: center;
-            color: #333;
-            position: relative;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .user-info {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
+            min-height: 100vh; 
+            display: flex; 
+            justify-content: center; 
             align-items: center;
-            gap: 15px;
-        }
-
-        .username-display {
-            background: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            color: #333;
-            font-weight: bold;
-        }
-
-        .balance-display {
-            background: #2563eb;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .balance-amount {
-            font-size: 3em;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .balance-label {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .summary-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 30px;
-            background: #f8f9fa;
-        }
-
-        .summary-card {
-            background: white;
             padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-left: 5px solid #2563eb;
         }
-
-        .summary-card.daily {
-            border-left-color: #ffd93d;
+        .container { width: 100%; max-width: 400px; }
+        .form-box { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 10px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-
-        .summary-card.weekly {
-            border-left-color: #2563eb;
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; color: #333; font-weight: bold; }
+        input, select { 
+            width: 100%; 
+            padding: 10px; 
+            border: 2px solid #ddd; 
+            border-radius: 5px; 
+            font-size: 14px;
         }
-
-        .summary-card.monthly {
-            border-left-color: #8b5cf6;
-        }
-
-        .summary-card.yearly {
-            border-left-color: #f59e0b;
-        }
-
-        .summary-title {
-            font-size: 1.1em;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .summary-stats {
+        input:focus { outline: none; border-color: #2563eb; }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background: #2563eb; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            cursor: pointer;
             margin-top: 10px;
         }
-
-        .stat-row {
-            display: flex;
+        button:hover { background: #1d4ed8; }
+        .toggle-link { text-align: center; margin-top: 20px; }
+        .toggle-link a { color: #2563eb; cursor: pointer; text-decoration: underline; }
+        .error { color: #ef4444; padding: 10px; background: #fef2f2; border-radius: 5px; margin-bottom: 20px; display: none; }
+        .success { color: #16a34a; padding: 10px; background: #f0fdf4; border-radius: 5px; margin-bottom: 20px; display: none; }
+        .hidden { display: none !important; }
+        .dashboard { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .dashboard h2 { color: #333; margin-bottom: 20px; }
+        .user-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .balance { font-size: 24px; color: #2563eb; font-weight: bold; }
+        .logout-btn { width: 150px; background: #ef4444; }
+        .transaction-list { margin-top: 20px; max-height: 300px; overflow-y: auto; }
+        .transaction-item { 
+            padding: 10px; 
+            background: #f8f9fa; 
+            margin-bottom: 10px; 
+            border-radius: 5px; 
+            display: flex; 
             justify-content: space-between;
-            margin: 8px 0;
-            font-size: 0.95em;
+        }
+        .delete-btn { width: auto; padding: 5px 10px; background: #ef4444; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- LOGIN FORM -->
+        <div id="loginSection" class="form-box">
+            <h1>💰 Login</h1>
+            <div class="error" id="loginError"></div>
+            <div class="success" id="loginSuccess"></div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="loginUser" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPass" placeholder="Enter password">
+            </div>
+            <button onclick="handleLogin()">Login</button>
+            <div class="toggle-link">
+                Don't have an account? <a onclick="switchToSignup()">Sign Up</a>
+            </div>
+        </div>
+
+        <!-- SIGNUP FORM -->
+        <div id="signupSection" class="form-box hidden">
+            <h1>💰 Sign Up</h1>
+            <div class="error" id="signupError"></div>
+            <div class="success" id="signupSuccess"></div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="signupUser" placeholder="Choose username">
+            </div>
+            <div class="form-group">
+                <label>Password (min 6 chars)</label>
+                <input type="password" id="signupPass" placeholder="Choose password">
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="signupConfirm" placeholder="Confirm password">
+            </div>
+            <button onclick="handleSignup()">Sign Up</button>
+            <div class="toggle-link">
+                Already have an account? <a onclick="switchToLogin()">Login</a>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="dashboardSection" class="dashboard hidden">
+            <div class="user-section">
+                <h2>Welcome, <span id="displayUser"></span>!</h2>
+                <button class="logout-btn" onclick="handleLogout()">Logout</button>
+            </div>
+            <div class="balance">Balance: ₹<span id="displayBalance">0.00</span></div>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Description</label>
+                <input type="text" id="description" placeholder="What is this for?">
+            </div>
+            <div class="form-group">
+                <label>Amount</label>
+                <input type="number" id="amount" placeholder="0.00" step="0.01">
+            </div>
+            <button onclick="addIncome()">➕ Add Income</button>
+            <button onclick="addExpense()" style="background: #ef4444;">➖ Add Expense</button>
+
+            <div class="transaction-list">
+                <div id="transactionContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple Storage Manager
+        function saveData() {
+            const data = {
+                users: window.users || {},
+                currentUser: window.currentUser || null
+            };
+            localStorage.setItem('appData', JSON.stringify(data));
         }
 
-        .stat-label {
-            color: #666;
+        function loadData() {
+            const data = JSON.parse(localStorage.getItem('appData')) || { users: {}, currentUser: null };
+            window.users = data.users || {};
+            window.currentUser = data.currentUser;
         }
 
-        .stat-value {
-            font-weight: bold;
+        // Initialize
+        loadData();
+        window.transactions = window.users[window.currentUser]?.transactions || [];
+        window.balance = window.users[window.currentUser]?.balance || 0;
+
+        // Show/Hide Functions
+        function switchToSignup() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('signupSection').classList.remove('hidden');
         }
 
-        .stat-value.income {
-            color: #16a34a;
+        function switchToLogin() {
+            document.getElementById('signupSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
         }
 
-        .stat-value.expense {
-            color: #ef4444;
+        function showError(elementId, message) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
         }
 
-        .stat-value.total {
-            color: #2563eb;
-            font-size: 1.3em;
+        // Signup Handler
+        function handleSignup() {
+            const username = document.getElementById('signupUser').value.trim();
+            const password = document.getElementById('signupPass').value;
+            const confirm = document.getElementById('signupConfirm').value;
+
+            if (!username || !password) {
+                showError('signupError', 'Fill in all fields');
+                return;
+            }
+            if (username.length < 3) {
+                showError('signupError', 'Username must be 3+ characters');
+                return;
+            }
+            if (password.length < 6) {
+                showError('signupError', 'Password must be 6+ characters');
+                return;
+            }
+            if (password !== confirm) {
+                showError('signupError', 'Passwords do not match');
+                return;
+            }
+            if (window.users[username]) {
+                showError('signupError', 'Username already exists');
+                return;
+            }
+
+            window.users[username] = { password, transactions: [], balance: 0 };
+            saveData();
+            
+            document.getElementById('signupSuccess').textContent = 'Account created! Login now.';
+            document.getElementById('signupSuccess').style.display = 'block';
+            
+            setTimeout(() => switchToLogin(), 2000);
         }
 
-        .input-section {
-            padding: 30px;
-            background: #f8f9fa;
+        // Login Handler
+        function handleLogin() {
+            const username = document.getElementById('loginUser').value.trim();
+            const password = document.getElementById('loginPass').value;
+
+            if (!username || !password) {
+                showError('loginError', 'Fill in all fields');
+                return;
+            }
+
+            const user = window.users[username];
+            if (!user || user.password !== password) {
+                showError('loginError', 'Invalid username or password');
+                return;
+            }
+
+            window.currentUser = username;
+            window.transactions = user.transactions || [];
+            window.balance = user.balance || 0;
+            saveData();
+
+            // Show Dashboard
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('signupSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('displayUser').textContent = username;
+            updateBalance();
+            showTransactions();
         }
 
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+        // Logout Handler
+        function handleLogout() {
+            if (confirm('Logout?')) {
+                window.currentUser = null;
+                saveData();
+                document.getElementById('dashboardSection').classList.add('hidden');
+                document.getElementById('loginSection').classList.remove('hidden');
+                document.getElementById('loginUser').value = '';
+                document.getElementById('loginPass').value = '';
+            }
         }
 
-        .input-group input,
-        .input-group select {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1em;
-            min-width: 150px;
+        // Add Income
+        function addIncome() {
+            const desc = document.getElementById('description').value.trim();
+            const amt = parseFloat(document.getElementById('amount').value);
+
+            if (!desc || !amt || amt <= 0) {
+                alert('Enter valid description and amount');
+                return;
+            }
+
+            window.balance += amt;
+            window.transactions.push({ type: 'income', description: desc, amount: amt, date: new Date().toLocaleDateString() });
+            window.users[window.currentUser].balance = window.balance;
+            window.users[window.currentUser].transactions = window.transactions;
+            saveData();
+
+            document.getElementById('description').value = '';
+            document.getElementById('amount').value = '';
+            updateBalance();
+            showTransactions();
         }
 
-        .input-group input:focus,
-        .input-group select:focus {
-            outline: none;
-            border-color: #2563eb;
+        // Add Expense
+        function addExpense() {
+            const desc = document.getElementById('description').value.trim();
+            const amt = parseFloat(document.getElementById('amount').value);
+
+            if (!desc || !amt || amt <= 0) {
+                alert('Enter valid description and amount');
+                return;
+            }
+
+            window.balance -= amt;
+            window.transactions.push({ type: 'expense', description: desc, amount: amt, date: new Date().toLocaleDateString() });
+            window.users[window.currentUser].balance = window.balance;
+            window.users[window.currentUser].transactions = window.transactions;
+            saveData();
+
+            document.getElementById('description').value = '';
+            document.getElementById('amount').value = '';
+            updateBalance();
+            showTransactions();
         }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
+        // Update Balance Display
+        function updateBalance() {
+            document.getElementById('displayBalance').textContent = window.balance.toFixed(2);
         }
 
-        button {
-            flex: 1;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
+        // Show Transactions
+        function showTransactions() {
+            const container = document.getElementById('transactionContainer');
+            if (window.transactions.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">No transactions yet</p>';
+                return;
+            }
+
+            container.innerHTML = window.transactions.map((t, i) => `
+                <div class="transaction-item">
+                    <div>
+                        <strong>${t.description}</strong><br>
+                        <small>${t.date}</small>
+                    </div>
+                    <div>
+                        <span style="color: ${t.type === 'income' ? '#16a34a' : '#ef4444'}">
+                            ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
+                        </span>
+                        <button class="delete-btn" onclick="deleteTransaction(${i})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
         }
+
+        // Delete Transaction
+        function deleteTransaction(index) {
+            const t = window.transactions[index];
+            if (t.type === 'income') {
+                window.balance -= t.amount;
+            } else {
+                window.balance += t.amount;
+            }
+            window.transactions.splice(index, 1);
+            window.users[window.currentUser].balance = window.balance;
+            window.users[window.currentUser].transactions = window.transactions;
+            saveData();
+            updateBalance();
+            showTransactions();
+        }
+    </script>
+</body>
+</html>
