@@ -838,7 +838,68 @@
                                 ` : state.userData.transactions.map(t => `
                                     <div class="transaction-item transaction-${t.type}">
                                         <div class="transaction-details">
-                                            <div class="transaction-title">${t.description}</div>
+                                            <div class="transaction-amount ${t.type === 'income' ? 'text-green' : 'text-red'}">
+                                                ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
+                                            </div>
+                                            <button onclick="deleteTransaction(${t.id})" class="btn btn-danger btn-small">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Set the selected category after render
+            const categorySelect = document.getElementById('category');
+            if (categorySelect) categorySelect.value = state.category;
+        }
+
+        // UI update functions
+        function showSignup() {
+            state.showSignup = true;
+            state.showForgotPassword = false;
+            state.authError = '';
+            state.authSuccess = '';
+            render();
+        }
+
+        function showLogin() {
+            state.showSignup = false;
+            state.showForgotPassword = false;
+            state.authError = '';
+            state.authSuccess = '';
+            render();
+        }
+
+        function showForgotPassword() {
+            state.showForgotPassword = true;
+            state.showSignup = false;
+            state.authError = '';
+            state.authSuccess = '';
+            render();
+        }
+
+        function updateDescription(value) {
+            state.description = value;
+        }
+
+        function updateAmount(value) {
+            state.amount = value;
+        }
+
+        function updateCategory(value) {
+            state.category = value;
+        }
+
+        // Initialize app
+        loadAllData();
+    </script>
+</body>
+</html>title">${t.description}</div>
                                             <div class="transaction-category">${t.category}</div>
                                             <div class="transaction-date">${new Date(t.date).toLocaleString('en-IN')}</div>
                                         </div>
