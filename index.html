@@ -928,4 +928,282 @@
 
                             ${!state.showSignup && !state.showForgotPassword ? `
                                 <div class="form-group">
-                                    <label>Username or Email
+                                    <label>Username or Email</label>
+                                    <input type="text" id="loginInput" placeholder="Enter your username or email">
+                                </div>
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="password" id="loginPassword" placeholder="Enter your password">
+                                </div>
+                                <div class="mb-6 text-right">
+                                    <button onclick="showForgotPassword()" class="link link-small">
+                                        Forgot Password?
+                                    </button>
+                                </div>
+                                <button onclick="handleLogin()" class="btn btn-primary mb-4">Login</button>
+                                <div class="text-center text-gray">
+                                    Don't have an account?
+                                    <button onclick="showSignup()" class="link">Sign Up</button>
+                                </div>
+                                <div class="text-center" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+                                    <button onclick="showBackupModal()" class="link link-small">
+                                        📁 Import Backup Data
+                                    </button>
+                                </div>
+                            ` : ''}
+
+                            ${state.showSignup && !state.showForgotPassword ? `
+                                <div class="form-group">
+                                    <label>Username</label>
+                                    <input type="text" id="signupUsername" placeholder="Choose a username">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email</label>
+                                    <input type="email" id="signupEmail" placeholder="Enter your email">
+                                </div>
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="password" id="signupPassword" placeholder="Choose a password (min 6 characters)">
+                                </div>
+                                <div class="form-group mb-6">
+                                    <label>Confirm Password</label>
+                                    <input type="password" id="signupPasswordConfirm" placeholder="Confirm your password">
+                                </div>
+                                <button onclick="handleSignup()" class="btn btn-secondary mb-4">Sign Up</button>
+                                <div class="text-center text-gray">
+                                    Already have an account?
+                                    <button onclick="showLogin()" class="link">Login</button>
+                                </div>
+                            ` : ''}
+
+                            ${state.showForgotPassword ? `
+                                <div class="mb-6">
+                                    <h2>Forgot Password?</h2>
+                                    <p class="subtitle mb-4" style="font-size: 0.875rem;">Enter your email address and we'll help you recover your account.</p>
+                                    <label>Email Address</label>
+                                    <input type="email" id="forgotEmail" placeholder="Enter your registered email">
+                                </div>
+                                <button onclick="handleForgotPassword()" class="btn btn-primary mb-4">Recover Account</button>
+                                <div class="text-center text-gray">
+                                    Remember your password?
+                                    <button onclick="showLogin()" class="link">Back to Login</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const summaries = calculateSummaries();
+            const periodIcons = { daily: '📅', weekly: '📊', monthly: '📈', yearly: '📆' };
+
+            app.innerHTML = `
+                <div class="container">
+                    ${state.statusMessage ? `
+                        <div class="toast toast-${state.statusMessage.isError ? 'error' : 'success'}">
+                            ${state.statusMessage.text}
+                        </div>
+                    ` : ''}
+
+                    ${state.showBackupModal ? `
+                        <div class="modal" onclick="if(event.target === this) hideBackupModal()">
+                            <div class="modal-content">
+                                <h2>Backup & Restore</h2>
+                                <div class="alert alert-info" style="margin-top: 1rem;">
+                                    <strong>💡 Important:</strong> Export your data regularly to avoid losing it if you clear browser data or change devices.
+                                </div>
+                                <div style="margin-top: 1.5rem;">
+                                    <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem; color: #374151;">Export Data</h3>
+                                    <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
+                                        Download all your data as a JSON file. Keep this file safe!
+                                    </p>
+                                    <button onclick="exportData(); hideBackupModal();" class="btn btn-success mb-4">
+                                        📥 Export All Data
+                                    </button>
+                                </div>
+                                <div style="margin-top: 1.5rem;">
+                                    <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem; color: #374151;">Import Data</h3>
+                                    <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
+                                        Restore data from a previously exported backup file.
+                                    </p>
+                                    <button onclick="triggerImport(); hideBackupModal();" class="btn btn-primary mb-4">
+                                        📤 Import Backup File
+                                    </button>
+                                </div>
+                                <div class="modal-buttons">
+                                    <button onclick="hideBackupModal()" class="btn" style="background: #6b7280; color: white;">
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
+
+                    <div class="card">
+                        <div class="header">
+                            <div class="header-content">
+                                <div class="text-center" style="flex: 1;">
+                                    <h1>💰 Expense Tracker</h1>
+                                    <p style="color: #374151;">Manage your daily finances</p>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                    <span class="user-info">${state.currentUser}</span>
+                                    <button onclick="showBackupModal()" class="btn btn-success btn-small">💾 Backup</button>
+                                    <button onclick="handleLogout()" class="btn btn-danger btn-small">Logout</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="balance-section">
+                            <div class="balance-label">Current Balance</div>
+                            <div class="balance-amount">₹${state.userData.balance.toFixed(2)}</div>
+                        </div>
+
+                        <div class="grid grid-4">
+                            ${Object.entries(summaries).map(([period, data]) => `
+                                <div class="summary-card">
+                                    <div class="summary-title">${periodIcons[period]} ${period.charAt(0).toUpperCase() + period.slice(1)}</div>
+                                    <div class="summary-row">
+                                        <span class="text-gray">Income:</span>
+                                        <span class="text-green">₹${data.income.toFixed(2)}</span>
+                                    </div>
+                                    <div class="summary-row">
+                                        <span class="text-gray">Expenses:</span>
+                                        <span class="text-red">₹${data.expense.toFixed(2)}</span>
+                                    </div>
+                                    <div class="summary-row summary-row-main">
+                                        <span class="text-gray">Net:</span>
+                                        <span class="text-blue">₹${data.net.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="input-section">
+                            <div class="input-row">
+                                <div class="input-flex">
+                                    <input type="text" id="description" value="${state.description}" 
+                                           placeholder="Description" onchange="updateDescription(this.value)">
+                                </div>
+                                <div class="input-flex">
+                                    <input type="number" id="amount" value="${state.amount}" 
+                                           placeholder="Amount" step="0.01" onchange="updateAmount(this.value)">
+                                </div>
+                                <div class="input-flex">
+                                    <select id="category" value="${state.category}" onchange="updateCategory(this.value)">
+                                        <option value="Food">Food</option>
+                                        <option value="EMI">EMI</option>
+                                        <option value="Online shopping">Online shopping</option>
+                                        <option value="Donations">Donations</option>
+                                        <option value="Fuel">Fuel</option>
+                                        <option value="Cash expenses">Cash expenses</option>
+                                        <option value="Recharges">Recharges</option>
+                                        <option value="Transport">Transport</option>
+                                        <option value="Shopping">Shopping</option>
+                                        <option value="Bills">Bills</option>
+                                        <option value="Entertainment">Entertainment</option>
+                                        <option value="Health">Health</option>
+                                        <option value="Salary">Salary</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="btn-row">
+                                <button onclick="addTransaction('income')" class="btn btn-secondary" style="flex: 1;">
+                                    💰 Add Money
+                                </button>
+                                <button onclick="addTransaction('expense')" class="btn btn-primary" style="flex: 1;">
+                                    💸 Add Expense
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="transactions-section">
+                            <h2>Recent Transactions</h2>
+                            <div class="transactions-list">
+                                ${state.userData.transactions.length === 0 ? `
+                                    <div class="empty-state">
+                                        No transactions yet. Add your first transaction above!
+                                    </div>
+                                ` : state.userData.transactions.map(t => `
+                                    <div class="transaction-item transaction-${t.type}">
+                                        <div class="transaction-details">
+                                            <div class="transaction-title">${t.description}</div>
+                                            <div class="transaction-category">${t.category}</div>
+                                            <div class="transaction-date">${new Date(t.date).toLocaleString('en-IN')}</div>
+                                        </div>
+                                        <div class="transaction-right">
+                                            <div class="transaction-amount ${t.type === 'income' ? 'text-green' : 'text-red'}">
+                                                ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
+                                            </div>
+                                            <button onclick="deleteTransaction(${t.id})" class="btn btn-danger btn-small">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="backup-section">
+                            <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem; color: #1e40af;">
+                                🛡️ Data Protection
+                            </h3>
+                            <p style="font-size: 0.875rem; color: #6b7280;">
+                                Your data is automatically backed up. Click the Backup button above to export or import your data anytime.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Set the selected category after render
+            const categorySelect = document.getElementById('category');
+            if (categorySelect) categorySelect.value = state.category;
+        }
+
+        // UI update functions
+        function showSignup() {
+            state.showSignup = true;
+            state.showForgotPassword = false;
+            state.authError = '';
+            state.authSuccess = '';
+            render();
+        }
+
+        function showLogin() {
+            state.showSignup = false;
+            state.showForgotPassword = false;
+            state.authError = '';
+            state.authSuccess = '';
+            render();
+        }
+
+        function showForgotPassword() {
+            state.showForgotPassword = true;
+            state.showSignup = false;
+            state.authError = '';
+            state.authSuccess = '';
+            render();
+        }
+
+        function updateDescription(value) {
+            state.description = value;
+        }
+
+        function updateAmount(value) {
+            state.amount = value;
+        }
+
+        function updateCategory(value) {
+            state.category = value;
+        }
+
+        // Initialize app
+        loadAllData();
+    </script>
+</body>
+</html>
