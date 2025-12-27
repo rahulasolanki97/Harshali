@@ -5,358 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Expense Tracker</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             min-height: 100vh;
-            background: linear-gradient(to bottom right, #4f46e5, #7c3aed);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-        .card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin-top: 1rem;
-        }
-        .auth-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
-        }
-        .auth-card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            width: 100%;
-            max-width: 28rem;
-        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .card { background: white; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); margin: 20px 0; }
+        .header { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 30px; border-radius: 15px 15px 0 0; color: white; text-align: center; position: relative; }
+        .header h1 { font-size: 32px; margin-bottom: 5px; }
+        .user-badge { position: absolute; top: 20px; right: 20px; background: white; color: #333; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; }
+        .logout-btn { position: absolute; top: 20px; left: 20px; background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .logout-btn:hover { background: #dc2626; }
+        .balance { background: #4f46e5; color: white; padding: 40px; text-align: center; }
+        .balance-amount { font-size: 48px; font-weight: bold; margin-top: 10px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; background: #f9fafb; }
+        .summary-card { background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #4f46e5; }
+        .summary-title { font-size: 18px; font-weight: bold; color: #374151; margin-bottom: 15px; }
+        .summary-row { display: flex; justify-content: space-between; margin: 8px 0; font-size: 14px; }
+        .text-green { color: #10b981; font-weight: bold; }
+        .text-red { color: #ef4444; font-weight: bold; }
+        .text-blue { color: #4f46e5; font-weight: bold; font-size: 18px; }
+        .input-section { padding: 20px; background: #f9fafb; }
+        .input-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .input-row input, .input-row select { flex: 1; min-width: 150px; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; }
+        .input-row input:focus, .input-row select:focus { outline: none; border-color: #4f46e5; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #4f46e5; color: white; }
+        .btn-primary:hover { background: #4338ca; }
+        .btn-secondary { background: #fbbf24; color: #1f2937; }
+        .btn-secondary:hover { background: #f59e0b; }
+        .btn-danger { background: #ef4444; color: white; font-size: 14px; padding: 8px 16px; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-row { display: flex; gap: 10px; }
+        .btn-row button { flex: 1; }
+        .transactions { padding: 20px; }
+        .transactions h2 { font-size: 24px; color: #1f2937; margin-bottom: 20px; }
+        .transaction-list { max-height: 400px; overflow-y: auto; }
+        .transaction { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; border-radius: 8px; gap: 15px; }
+        .transaction-income { background: #fef3c7; border-left: 4px solid #fbbf24; }
+        .transaction-expense { background: #fee2e2; border-left: 4px solid #ef4444; }
+        .transaction-info { flex: 1; }
+        .transaction-title { font-weight: bold; color: #1f2937; }
+        .transaction-category { font-size: 14px; color: #6b7280; }
+        .transaction-date { font-size: 12px; color: #9ca3af; }
+        .transaction-amount { font-size: 20px; font-weight: bold; margin-right: 10px; }
+        .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-card { background: white; border-radius: 15px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+        .auth-card h1 { text-align: center; font-size: 32px; color: #1f2937; margin-bottom: 10px; }
+        .auth-card .icon { text-align: center; font-size: 64px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; color: #374151; margin-bottom: 8px; }
+        .form-group input { width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; }
+        .form-group input:focus { outline: none; border-color: #4f46e5; }
+        .alert { padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
+        .alert-error { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
+        .alert-success { background: #f0fdf4; border-left: 4px solid #10b981; color: #166534; white-space: pre-line; }
         .text-center { text-align: center; }
-        .icon { font-size: 4rem; margin-bottom: 1rem; }
-        h1 { font-size: 1.875rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem; }
-        h2 { font-size: 1.5rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem; }
-        .subtitle { color: #6b7280; }
-        .alert {
-            padding: 0.75rem;
-            border-radius: 0.375rem;
-            margin-bottom: 1rem;
-            font-size: 0.875rem;
-        }
-        .alert-error {
-            background-color: #fef2f2;
-            border-left: 4px solid #ef4444;
-            color: #991b1b;
-        }
-        .alert-success {
-            background-color: #f0fdf4;
-            border-left: 4px solid #22c55e;
-            color: #166534;
-            white-space: pre-line;
-        }
-        .alert-info {
-            background-color: #eff6ff;
-            border-left: 4px solid #3b82f6;
-            color: #1e40af;
-        }
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        label {
-            display: block;
-            color: #374151;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-        input, select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
-        .btn {
-            width: 100%;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-weight: bold;
-            font-size: 1rem;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
-        }
-        .btn-primary:hover { background-color: #2563eb; }
-        .btn-secondary {
-            background-color: #fbbf24;
-            color: #1f2937;
-        }
-        .btn-secondary:hover { background-color: #f59e0b; }
-        .btn-danger {
-            background-color: #ef4444;
-            color: white;
-        }
-        .btn-danger:hover { background-color: #dc2626; }
-        .btn-success {
-            background-color: #22c55e;
-            color: white;
-        }
-        .btn-success:hover { background-color: #16a34a; }
-        .btn-small {
-            width: auto;
-            padding: 0.5rem 1rem;
-            font-size: 0.875rem;
-        }
-        .link {
-            color: #3b82f6;
-            font-weight: bold;
-            cursor: pointer;
-            background: none;
-            border: none;
-            text-decoration: none;
-        }
-        .link:hover { text-decoration: underline; }
-        .link-small {
-            font-size: 0.875rem;
-            font-weight: normal;
-        }
-        .header {
-            background: linear-gradient(to right, #fbbf24, #f59e0b);
-            padding: 1.5rem;
-            position: relative;
-        }
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .user-info {
-            background: white;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            font-weight: bold;
-            color: #1f2937;
-        }
-        .balance-section {
-            background-color: #2563eb;
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-        .balance-label { font-size: 1.125rem; margin-bottom: 0.5rem; }
-        .balance-amount { font-size: 3rem; font-weight: bold; }
-        .grid {
-            display: grid;
-            gap: 1rem;
-            padding: 1.5rem;
-            background-color: #f9fafb;
-        }
-        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-        .summary-card {
-            background: white;
-            border-radius: 0.75rem;
-            padding: 1rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #3b82f6;
-        }
-        .summary-title {
-            font-size: 1.125rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.75rem;
-        }
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-        .summary-row-main {
-            padding-top: 0.5rem;
-            border-top: 1px solid #e5e7eb;
-        }
-        .text-green { color: #16a34a; font-weight: bold; }
-        .text-red { color: #dc2626; font-weight: bold; }
-        .text-blue { color: #2563eb; font-weight: bold; font-size: 1.125rem; }
-        .text-gray { color: #6b7280; }
-        .input-section {
-            padding: 1.5rem;
-            background-color: #f9fafb;
-        }
-        .input-row {
-            display: flex;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-        .input-flex {
-            flex: 1;
-            min-width: 150px;
-        }
-        .btn-row {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-        .transactions-section {
-            padding: 1.5rem;
-        }
-        .transactions-list {
-            max-height: 24rem;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            gap: 1rem;
-        }
-        .transaction-income {
-            background-color: #fef3c7;
-            border-left: 4px solid #fbbf24;
-        }
-        .transaction-expense {
-            background-color: #fee2e2;
-            border-left: 4px solid #ef4444;
-        }
-        .transaction-details {
-            flex: 1;
-        }
-        .transaction-title {
-            font-weight: bold;
-            color: #1f2937;
-        }
-        .transaction-category {
-            font-size: 0.875rem;
-            color: #6b7280;
-        }
-        .transaction-date {
-            font-size: 0.75rem;
-            color: #9ca3af;
-        }
-        .transaction-right {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .transaction-amount {
-            font-size: 1.25rem;
-            font-weight: bold;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #9ca3af;
-        }
-        .toast {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            padding: 1rem 1.5rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            color: white;
-            z-index: 1000;
-            max-width: 400px;
-        }
-        .toast-success { background-color: #22c55e; }
-        .toast-error { background-color: #ef4444; }
-        .mb-4 { margin-bottom: 1rem; }
-        .mb-6 { margin-bottom: 1.5rem; }
-        .loading-screen {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(to bottom right, #4f46e5, #7c3aed);
-        }
-        .loading-card {
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            text-align: center;
-        }
-        .text-right { text-align: right; }
-        .backup-section {
-            padding: 1.5rem;
-            background-color: #f0f9ff;
-            border-top: 2px solid #e5e7eb;
-        }
-        .backup-buttons {
-            display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-            margin-top: 1rem;
-        }
-        .file-input {
-            display: none;
-        }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 1rem;
-        }
-        .modal-content {
-            background: white;
-            border-radius: 1rem;
-            padding: 2rem;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-buttons {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: 1.5rem;
-        }
+        .link { color: #4f46e5; cursor: pointer; font-weight: bold; background: none; border: none; text-decoration: underline; }
+        .toast { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; }
+        .toast-error { background: #ef4444; }
+        .backup-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; margin-left: 10px; }
+        .backup-btn:hover { background: #059669; }
+        .backup-section { padding: 20px; background: #eff6ff; border-top: 2px solid #e5e7eb; text-align: center; }
+        .empty { text-align: center; padding: 60px 20px; color: #9ca3af; font-size: 18px; }
     </style>
 </head>
 <body>
-    <div id="app"></div>
+    <div id="app">
+        <div class="auth-page">
+            <div class="auth-card">
+                <div class="icon">💰</div>
+                <h1>Loading...</h1>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // State management
         let state = {
             isLoggedIn: false,
             showSignup: false,
             showForgotPassword: false,
-            showBackupModal: false,
             currentUser: null,
             users: {},
             userData: { transactions: [], balance: 0 },
@@ -369,271 +101,104 @@
             category: 'Food'
         };
 
-        // Enhanced localStorage wrapper with automatic backup
         const storage = {
             get: (key) => {
                 try {
                     const value = localStorage.getItem(key);
                     return value ? JSON.parse(value) : null;
-                } catch (e) {
-                    return null;
-                }
+                } catch (e) { return null; }
             },
             set: (key, value) => {
                 try {
                     localStorage.setItem(key, JSON.stringify(value));
-                    // Auto-backup after every save
-                    autoBackup();
                     return true;
-                } catch (e) {
-                    return false;
-                }
+                } catch (e) { return false; }
             },
             delete: (key) => {
                 try {
                     localStorage.removeItem(key);
                     return true;
-                } catch (e) {
-                    return false;
-                }
+                } catch (e) { return false; }
             }
         };
 
-        // Auto-backup to IndexedDB (survives cache clear better than localStorage)
-        function autoBackup() {
-            try {
-                const allData = {
-                    users: storage.get('expense_tracker_users') || {},
-                    currentUser: storage.get('expense_tracker_current_user'),
-                    timestamp: new Date().toISOString()
-                };
-
-                // Backup all user data
-                const users = allData.users;
-                Object.keys(users).forEach(username => {
-                    const userData = storage.get(`expense_tracker_data_${username}`);
-                    if (userData) {
-                        allData[`data_${username}`] = userData;
-                    }
-                });
-
-                // Store in IndexedDB
-                const request = indexedDB.open('ExpenseTrackerBackup', 1);
-                
-                request.onupgradeneeded = (e) => {
-                    const db = e.target.result;
-                    if (!db.objectStoreNames.contains('backups')) {
-                        db.createObjectStore('backups', { keyPath: 'id' });
-                    }
-                };
-
-                request.onsuccess = (e) => {
-                    const db = e.target.result;
-                    const transaction = db.transaction(['backups'], 'readwrite');
-                    const store = transaction.objectStore('backups');
-                    store.put({ id: 'latest', data: allData });
-                };
-            } catch (e) {
-                console.error('Auto-backup failed:', e);
-            }
-        }
-
-        // Restore from IndexedDB backup
-        function restoreFromAutoBackup() {
-            return new Promise((resolve, reject) => {
-                try {
-                    const request = indexedDB.open('ExpenseTrackerBackup', 1);
-                    
-                    request.onsuccess = (e) => {
-                        const db = e.target.result;
-                        if (!db.objectStoreNames.contains('backups')) {
-                            resolve(null);
-                            return;
-                        }
-                        
-                        const transaction = db.transaction(['backups'], 'readonly');
-                        const store = transaction.objectStore('backups');
-                        const getRequest = store.get('latest');
-                        
-                        getRequest.onsuccess = () => {
-                            resolve(getRequest.result ? getRequest.result.data : null);
-                        };
-                        
-                        getRequest.onerror = () => resolve(null);
-                    };
-                    
-                    request.onerror = () => resolve(null);
-                } catch (e) {
-                    resolve(null);
-                }
-            });
-        }
-
-        // Export all data to JSON file
         function exportData() {
             const allData = {
                 users: storage.get('expense_tracker_users') || {},
                 currentUser: storage.get('expense_tracker_current_user'),
-                timestamp: new Date().toISOString(),
-                version: '1.0'
+                timestamp: new Date().toISOString()
             };
-
-            // Include all user data
-            const users = allData.users;
-            Object.keys(users).forEach(username => {
+            Object.keys(allData.users).forEach(username => {
                 const userData = storage.get(`expense_tracker_data_${username}`);
-                if (userData) {
-                    allData[`data_${username}`] = userData;
-                }
+                if (userData) allData[`data_${username}`] = userData;
             });
-
             const dataStr = JSON.stringify(allData, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `expense-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(link);
+            link.download = `expense-backup-${new Date().toISOString().split('T')[0]}.json`;
             link.click();
-            document.body.removeChild(link);
             URL.revokeObjectURL(url);
-
-            showStatus('Data exported successfully! Save this file safely.');
+            showStatus('Backup downloaded successfully!');
         }
 
-        // Import data from JSON file
-        function importData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    // Validate data structure
-                    if (!importedData.users || typeof importedData.users !== 'object') {
-                        showStatus('Invalid backup file format!', true);
-                        return;
-                    }
-
-                    // Show confirmation modal
-                    if (confirm('This will replace all current data. Continue?\n\nTip: Export current data first as backup!')) {
-                        // Restore users
-                        storage.set('expense_tracker_users', importedData.users);
-                        
-                        // Restore user data
-                        Object.keys(importedData.users).forEach(username => {
-                            const key = `data_${username}`;
-                            if (importedData[key]) {
-                                storage.set(`expense_tracker_data_${username}`, importedData[key]);
-                            }
-                        });
-
-                        // Restore current user if still exists
-                        if (importedData.currentUser && importedData.users[importedData.currentUser]) {
-                            storage.set('expense_tracker_current_user', importedData.currentUser);
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (!data.users) {
+                            showStatus('Invalid backup file!', true);
+                            return;
                         }
-
-                        showStatus('Data imported successfully! Reloading...');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
+                        if (confirm('This will replace all data. Continue?')) {
+                            storage.set('expense_tracker_users', data.users);
+                            Object.keys(data.users).forEach(username => {
+                                if (data[`data_${username}`]) {
+                                    storage.set(`expense_tracker_data_${username}`, data[`data_${username}`]);
+                                }
+                            });
+                            showStatus('Data imported! Reloading...');
+                            setTimeout(() => location.reload(), 1500);
+                        }
+                    } catch (err) {
+                        showStatus('Failed to import data!', true);
                     }
-                } catch (error) {
-                    showStatus('Failed to import data. Invalid file format!', true);
-                    console.error('Import error:', error);
-                }
+                };
+                reader.readAsText(file);
             };
-            reader.readAsText(file);
-            
-            // Reset file input
-            event.target.value = '';
+            input.click();
         }
 
-        // Load data on startup
-        async function loadAllData() {
-            state.isLoading = true;
-            render();
-
-            // Try to load from localStorage first
-            let users = storage.get('expense_tracker_users');
-            let currentUser = storage.get('expense_tracker_current_user');
-
-            // If localStorage is empty, try to restore from IndexedDB backup
-            if (!users || Object.keys(users).length === 0) {
-                const backup = await restoreFromAutoBackup();
-                if (backup && backup.users) {
-                    console.log('Restoring from auto-backup...');
-                    
-                    // Restore all data
-                    storage.set('expense_tracker_users', backup.users);
-                    if (backup.currentUser) {
-                        storage.set('expense_tracker_current_user', backup.currentUser);
-                    }
-                    
-                    Object.keys(backup.users).forEach(username => {
-                        const key = `data_${username}`;
-                        if (backup[key]) {
-                            storage.set(`expense_tracker_data_${username}`, backup[key]);
-                        }
-                    });
-
-                    users = backup.users;
-                    currentUser = backup.currentUser;
-                    
-                    showStatus('Data restored from backup!');
-                }
-            }
-
-            state.users = users || {};
-
+        function loadAllData() {
+            state.users = storage.get('expense_tracker_users') || {};
+            const currentUser = storage.get('expense_tracker_current_user');
             if (currentUser && state.users[currentUser]) {
-                const userData = storage.get(`expense_tracker_data_${currentUser}`) || { transactions: [], balance: 0 };
                 state.currentUser = currentUser;
-                state.userData = userData;
+                state.userData = storage.get(`expense_tracker_data_${currentUser}`) || { transactions: [], balance: 0 };
                 state.isLoggedIn = true;
             }
-
             state.isLoading = false;
             render();
         }
 
-        // Save functions
-        function saveUsers(users) {
-            storage.set('expense_tracker_users', users);
-            state.users = users;
-        }
-
-        function saveCurrentUser(username) {
-            if (username) {
-                storage.set('expense_tracker_current_user', username);
-            } else {
-                storage.delete('expense_tracker_current_user');
-            }
-        }
-
-        function saveUserData(username, data) {
-            storage.set(`expense_tracker_data_${username}`, data);
-            showStatus('Data saved successfully!');
-        }
-
-        // Status message
         function showStatus(message, isError = false) {
             state.statusMessage = { text: message, isError };
             render();
-            setTimeout(() => {
-                state.statusMessage = null;
-                render();
-            }, 3000);
+            setTimeout(() => { state.statusMessage = null; render(); }, 3000);
         }
 
-        // Validation
         function isValidEmail(email) {
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         }
 
-        // Auth handlers
         function handleSignup() {
             const username = document.getElementById('signupUsername').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
@@ -645,60 +210,44 @@
                 render();
                 return;
             }
-
             if (username.length < 3) {
                 state.authError = 'Username must be at least 3 characters';
                 render();
                 return;
             }
-
             if (!isValidEmail(email)) {
-                state.authError = 'Please enter a valid email address';
+                state.authError = 'Please enter a valid email';
                 render();
                 return;
             }
-
             if (password.length < 6) {
                 state.authError = 'Password must be at least 6 characters';
                 render();
                 return;
             }
-
             if (password !== confirmPassword) {
                 state.authError = 'Passwords do not match';
                 render();
                 return;
             }
-
             if (state.users[username]) {
                 state.authError = 'Username already exists';
                 render();
                 return;
             }
-
-            const emailExists = Object.values(state.users).some(user => user.email === email);
-            if (emailExists) {
+            if (Object.values(state.users).some(u => u.email === email)) {
                 state.authError = 'Email already registered';
                 render();
                 return;
             }
 
-            const newUsers = {
-                ...state.users,
-                [username]: {
-                    email: email,
-                    password: password,
-                    createdAt: new Date().toISOString()
-                }
-            };
-
-            saveUsers(newUsers);
-            saveUserData(username, { transactions: [], balance: 0 });
-
-            state.authSuccess = 'Account created successfully! You can now login.';
+            state.users[username] = { email, password, createdAt: new Date().toISOString() };
+            storage.set('expense_tracker_users', state.users);
+            storage.set(`expense_tracker_data_${username}`, { transactions: [], balance: 0 });
+            
+            state.authSuccess = 'Account created! You can now login.';
             state.authError = '';
             render();
-
             setTimeout(() => {
                 state.showSignup = false;
                 state.authSuccess = '';
@@ -738,52 +287,45 @@
                 return;
             }
 
-            const userData = storage.get(`expense_tracker_data_${username}`) || { transactions: [], balance: 0 };
-            
             state.currentUser = username;
-            state.userData = userData;
+            state.userData = storage.get(`expense_tracker_data_${username}`) || { transactions: [], balance: 0 };
             state.isLoggedIn = true;
             state.authError = '';
-            
-            saveCurrentUser(username);
+            storage.set('expense_tracker_current_user', username);
             showStatus(`Welcome back, ${username}!`);
             render();
         }
 
         function handleForgotPassword() {
-            const emailInput = document.getElementById('forgotEmail').value.trim();
-
-            if (!emailInput) {
-                state.authError = 'Please enter your email address';
+            const email = document.getElementById('forgotEmail').value.trim();
+            if (!email) {
+                state.authError = 'Please enter your email';
                 render();
                 return;
             }
-
-            if (!isValidEmail(emailInput)) {
-                state.authError = 'Please enter a valid email address';
+            if (!isValidEmail(email)) {
+                state.authError = 'Please enter a valid email';
                 render();
                 return;
             }
 
             let foundUsername = null;
             for (const [username, userData] of Object.entries(state.users)) {
-                if (userData.email === emailInput) {
+                if (userData.email === email) {
                     foundUsername = username;
                     break;
                 }
             }
 
             if (!foundUsername) {
-                state.authError = 'No account found with this email address';
+                state.authError = 'No account found with this email';
                 render();
                 return;
             }
 
-            const userPassword = state.users[foundUsername].password;
-            state.authSuccess = `Your password is: ${userPassword}\n\nUsername: ${foundUsername}\n\nPlease save this information and login.`;
+            state.authSuccess = `Your password is: ${state.users[foundUsername].password}\n\nUsername: ${foundUsername}`;
             state.authError = '';
             render();
-
             setTimeout(() => {
                 state.showForgotPassword = false;
                 state.authSuccess = '';
@@ -793,17 +335,14 @@
 
         function handleLogout() {
             if (confirm('Are you sure you want to logout?')) {
-                saveCurrentUser(null);
+                storage.delete('expense_tracker_current_user');
                 state.isLoggedIn = false;
                 state.currentUser = null;
                 state.userData = { transactions: [], balance: 0 };
-                state.showSignup = false;
-                state.showForgotPassword = false;
                 render();
             }
         }
 
-        // Transaction handlers
         function addTransaction(type) {
             if (!state.description || !state.amount || parseFloat(state.amount) <= 0) {
                 alert('Please enter valid description and amount!');
@@ -812,61 +351,49 @@
 
             const transaction = {
                 id: Date.now(),
-                type: type,
+                type,
                 description: state.description,
                 amount: parseFloat(state.amount),
                 category: state.category,
                 date: new Date().toISOString()
             };
 
-            const newTransactions = [transaction, ...state.userData.transactions];
-            const newBalance = type === 'income'
+            state.userData.transactions = [transaction, ...state.userData.transactions];
+            state.userData.balance = type === 'income' 
                 ? state.userData.balance + parseFloat(state.amount)
                 : state.userData.balance - parseFloat(state.amount);
 
-            state.userData = { transactions: newTransactions, balance: newBalance };
-            saveUserData(state.currentUser, state.userData);
-            
+            storage.set(`expense_tracker_data_${state.currentUser}`, state.userData);
             state.description = '';
             state.amount = '';
             render();
         }
 
         function deleteTransaction(id) {
-            const transaction = state.userData.transactions.find(t => t.id === id);
-            if (!transaction) return;
+            const t = state.userData.transactions.find(t => t.id === id);
+            if (!t) return;
 
-            const newBalance = transaction.type === 'income'
-                ? state.userData.balance - transaction.amount
-                : state.userData.balance + transaction.amount;
-
-            const newTransactions = state.userData.transactions.filter(t => t.id !== id);
-            state.userData = { transactions: newTransactions, balance: newBalance };
-            saveUserData(state.currentUser, state.userData);
+            state.userData.balance = t.type === 'income'
+                ? state.userData.balance - t.amount
+                : state.userData.balance + t.amount;
+            state.userData.transactions = state.userData.transactions.filter(t => t.id !== id);
+            storage.set(`expense_tracker_data_${state.currentUser}`, state.userData);
             render();
         }
 
-        // Calculate summaries
         function calculateSummaries() {
             const now = new Date();
             const periods = { daily: 1, weekly: 7, monthly: 30, yearly: 365 };
             const summaries = {};
 
             Object.keys(periods).forEach(period => {
-                const days = periods[period];
-                const cutoffDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
-                
-                let income = 0;
-                let expense = 0;
+                const cutoff = new Date(now.getTime() - (periods[period] * 24 * 60 * 60 * 1000));
+                let income = 0, expense = 0;
 
                 state.userData.transactions.forEach(t => {
-                    const tDate = new Date(t.date);
-                    if (tDate >= cutoffDate) {
-                        if (t.type === 'income') {
-                            income += t.amount;
-                        } else {
-                            expense += t.amount;
-                        }
+                    if (new Date(t.date) >= cutoff) {
+                        if (t.type === 'income') income += t.amount;
+                        else expense += t.amount;
                     }
                 });
 
@@ -876,31 +403,15 @@
             return summaries;
         }
 
-        // Backup modal
-        function showBackupModal() {
-            state.showBackupModal = true;
-            render();
-        }
-
-        function hideBackupModal() {
-            state.showBackupModal = false;
-            render();
-        }
-
-        function triggerImport() {
-            document.getElementById('importFile').click();
-        }
-
-        // Render function
         function render() {
             const app = document.getElementById('app');
-            
+
             if (state.isLoading) {
                 app.innerHTML = `
-                    <div class="loading-screen">
-                        <div class="loading-card">
+                    <div class="auth-page">
+                        <div class="auth-card">
                             <div class="icon">💰</div>
-                            <div style="font-size: 1.25rem; font-weight: bold; color: #1f2937;">Loading...</div>
+                            <h1>Loading...</h1>
                         </div>
                     </div>
                 `;
@@ -909,50 +420,39 @@
 
             if (!state.isLoggedIn) {
                 app.innerHTML = `
-                    <div class="auth-container">
-                        ${state.statusMessage ? `
-                            <div class="toast toast-${state.statusMessage.isError ? 'error' : 'success'}">
-                                ${state.statusMessage.text}
-                            </div>
-                        ` : ''}
-                        
+                    <div class="auth-page">
+                        ${state.statusMessage ? `<div class="toast ${state.statusMessage.isError ? 'toast-error' : ''}">${state.statusMessage.text}</div>` : ''}
                         <div class="auth-card">
-                            <div class="text-center mb-6">
-                                <div class="icon">💰</div>
-                                <h1>Expense Tracker</h1>
-                                <p class="subtitle">Track your finances securely</p>
-                            </div>
-
+                            <div class="icon">💰</div>
+                            <h1>Expense Tracker</h1>
+                            <p class="text-center" style="color: #6b7280; margin-bottom: 20px;">Track your finances securely</p>
+                            
                             ${state.authError ? `<div class="alert alert-error">${state.authError}</div>` : ''}
                             ${state.authSuccess ? `<div class="alert alert-success">${state.authSuccess}</div>` : ''}
 
                             ${!state.showSignup && !state.showForgotPassword ? `
                                 <div class="form-group">
                                     <label>Username or Email</label>
-                                    <input type="text" id="loginInput" placeholder="Enter your username or email">
+                                    <input type="text" id="loginInput" placeholder="Enter username or email">
                                 </div>
                                 <div class="form-group">
                                     <label>Password</label>
-                                    <input type="password" id="loginPassword" placeholder="Enter your password">
+                                    <input type="password" id="loginPassword" placeholder="Enter password">
                                 </div>
-                                <div class="mb-6 text-right">
-                                    <button onclick="showForgotPassword()" class="link link-small">
-                                        Forgot Password?
-                                    </button>
+                                <div style="text-align: right; margin-bottom: 20px;">
+                                    <button class="link" onclick="state.showForgotPassword = true; state.authError = ''; state.authSuccess = ''; render();">Forgot Password?</button>
                                 </div>
-                                <button onclick="handleLogin()" class="btn btn-primary mb-4">Login</button>
-                                <div class="text-center text-gray">
-                                    Don't have an account?
-                                    <button onclick="showSignup()" class="link">Sign Up</button>
+                                <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="handleLogin()">Login</button>
+                                <div class="text-center">
+                                    Don't have an account? 
+                                    <button class="link" onclick="state.showSignup = true; state.authError = ''; state.authSuccess = ''; render();">Sign Up</button>
                                 </div>
-                                <div class="text-center" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
-                                    <button onclick="showBackupModal()" class="link link-small">
-                                        📁 Import Backup Data
-                                    </button>
+                                <div class="text-center" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                                    <button class="link" onclick="importData()">📁 Import Backup</button>
                                 </div>
                             ` : ''}
 
-                            ${state.showSignup && !state.showForgotPassword ? `
+                            ${state.showSignup ? `
                                 <div class="form-group">
                                     <label>Username</label>
                                     <input type="text" id="signupUsername" placeholder="Choose a username">
@@ -963,30 +463,30 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Password</label>
-                                    <input type="password" id="signupPassword" placeholder="Choose a password (min 6 characters)">
+                                    <input type="password" id="signupPassword" placeholder="Min 6 characters">
                                 </div>
-                                <div class="form-group mb-6">
+                                <div class="form-group">
                                     <label>Confirm Password</label>
-                                    <input type="password" id="signupPasswordConfirm" placeholder="Confirm your password">
+                                    <input type="password" id="signupPasswordConfirm" placeholder="Confirm password">
                                 </div>
-                                <button onclick="handleSignup()" class="btn btn-secondary mb-4">Sign Up</button>
-                                <div class="text-center text-gray">
-                                    Already have an account?
-                                    <button onclick="showLogin()" class="link">Login</button>
+                                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 15px;" onclick="handleSignup()">Sign Up</button>
+                                <div class="text-center">
+                                    Already have an account? 
+                                    <button class="link" onclick="state.showSignup = false; state.authError = ''; state.authSuccess = ''; render();">Login</button>
                                 </div>
                             ` : ''}
 
                             ${state.showForgotPassword ? `
-                                <div class="mb-6">
-                                    <h2>Forgot Password?</h2>
-                                    <p class="subtitle mb-4" style="font-size: 0.875rem;">Enter your email address and we'll help you recover your account.</p>
+                                <h2 style="font-size: 20px; margin-bottom: 10px;">Forgot Password?</h2>
+                                <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">Enter your email to recover your account</p>
+                                <div class="form-group">
                                     <label>Email Address</label>
-                                    <input type="email" id="forgotEmail" placeholder="Enter your registered email">
+                                    <input type="email" id="forgotEmail" placeholder="Enter registered email">
                                 </div>
-                                <button onclick="handleForgotPassword()" class="btn btn-primary mb-4">Recover Account</button>
-                                <div class="text-center text-gray">
-                                    Remember your password?
-                                    <button onclick="showLogin()" class="link">Back to Login</button>
+                                <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="handleForgotPassword()">Recover Account</button>
+                                <div class="text-center">
+                                    Remember your password? 
+                                    <button class="link" onclick="state.showForgotPassword = false; state.authError = ''; state.authSuccess = ''; render();">Back to Login</button>
                                 </div>
                             ` : ''}
                         </div>
@@ -996,86 +496,41 @@
             }
 
             const summaries = calculateSummaries();
-            const periodIcons = { daily: '📅', weekly: '📊', monthly: '📈', yearly: '📆' };
+            const icons = { daily: '📅', weekly: '📊', monthly: '📈', yearly: '📆' };
 
             app.innerHTML = `
                 <div class="container">
-                    ${state.statusMessage ? `
-                        <div class="toast toast-${state.statusMessage.isError ? 'error' : 'success'}">
-                            ${state.statusMessage.text}
-                        </div>
-                    ` : ''}
-
-                    ${state.showBackupModal ? `
-                        <div class="modal" onclick="if(event.target === this) hideBackupModal()">
-                            <div class="modal-content">
-                                <h2>Backup & Restore</h2>
-                                <div class="alert alert-info" style="margin-top: 1rem;">
-                                    <strong>💡 Important:</strong> Export your data regularly to avoid losing it if you clear browser data or change devices.
-                                </div>
-                                <div style="margin-top: 1.5rem;">
-                                    <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem; color: #374151;">Export Data</h3>
-                                    <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
-                                        Download all your data as a JSON file. Keep this file safe!
-                                    </p>
-                                    <button onclick="exportData(); hideBackupModal();" class="btn btn-success mb-4">
-                                        📥 Export All Data
-                                    </button>
-                                </div>
-                                <div style="margin-top: 1.5rem;">
-                                    <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem; color: #374151;">Import Data</h3>
-                                    <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
-                                        Restore data from a previously exported backup file.
-                                    </p>
-                                    <button onclick="triggerImport(); hideBackupModal();" class="btn btn-primary mb-4">
-                                        📤 Import Backup File
-                                    </button>
-                                </div>
-                                <div class="modal-buttons">
-                                    <button onclick="hideBackupModal()" class="btn" style="background: #6b7280; color: white;">
-                                        Close
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
-
+                    ${state.statusMessage ? `<div class="toast ${state.statusMessage.isError ? 'toast-error' : ''}">${state.statusMessage.text}</div>` : ''}
+                    
                     <div class="card">
                         <div class="header">
-                            <div class="header-content">
-                                <div class="text-center" style="flex: 1;">
-                                    <h1>💰 Expense Tracker</h1>
-                                    <p style="color: #374151;">Manage your daily finances</p>
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-                                    <span class="user-info">${state.currentUser}</span>
-                                    <button onclick="showBackupModal()" class="btn btn-success btn-small">💾 Backup</button>
-                                    <button onclick="handleLogout()" class="btn btn-danger btn-small">Logout</button>
-                                </div>
-                            </div>
+                            <button class="logout-btn" onclick="handleLogout()">Logout</button>
+                            <h1>💰 Expense Tracker</h1>
+                            <p>Manage your daily finances</p>
+                            <span class="user-badge">${state.currentUser}</span>
+                            <button class="backup-btn" onclick="exportData()" style="position: absolute; top: 20px; left: 100px;">💾 Export</button>
+                            <button class="backup-btn" onclick="importData()" style="position: absolute; top: 60px; left: 100px;">📥 Import</button>
                         </div>
 
-                        <div class="balance-section">
-                            <div class="balance-label">Current Balance</div>
+                        <div class="balance">
+                            <div>Current Balance</div>
                             <div class="balance-amount">₹${state.userData.balance.toFixed(2)}</div>
                         </div>
 
-                        <div class="grid grid-4">
+                        <div class="summary-grid">
                             ${Object.entries(summaries).map(([period, data]) => `
                                 <div class="summary-card">
-                                    <div class="summary-title">${periodIcons[period]} ${period.charAt(0).toUpperCase() + period.slice(1)}</div>
+                                    <div class="summary-title">${icons[period]} ${period.charAt(0).toUpperCase() + period.slice(1)}</div>
                                     <div class="summary-row">
-                                        <span class="text-gray">Income:</span>
+                                        <span>Income:</span>
                                         <span class="text-green">₹${data.income.toFixed(2)}</span>
                                     </div>
                                     <div class="summary-row">
-                                        <span class="text-gray">Expenses:</span>
+                                        <span>Expenses:</span>
                                         <span class="text-red">₹${data.expense.toFixed(2)}</span>
                                     </div>
-                                    <div class="summary-row summary-row-main">
-                                        <span class="text-gray">Net:</span>
+                                    <div class="summary-row" style="padding-top: 10px; border-top: 1px solid #e5e7eb;">
+                                        <span>Net:</span>
                                         <span class="text-blue">₹${data.net.toFixed(2)}</span>
                                     </div>
                                 </div>
@@ -1084,64 +539,48 @@
 
                         <div class="input-section">
                             <div class="input-row">
-                                <div class="input-flex">
-                                    <input type="text" id="description" value="${state.description}" 
-                                           placeholder="Description" onchange="updateDescription(this.value)">
-                                </div>
-                                <div class="input-flex">
-                                    <input type="number" id="amount" value="${state.amount}" 
-                                           placeholder="Amount" step="0.01" onchange="updateAmount(this.value)">
-                                </div>
-                                <div class="input-flex">
-                                    <select id="category" value="${state.category}" onchange="updateCategory(this.value)">
-                                        <option value="Food">Food</option>
-                                        <option value="EMI">EMI</option>
-                                        <option value="Online shopping">Online shopping</option>
-                                        <option value="Donations">Donations</option>
-                                        <option value="Fuel">Fuel</option>
-                                        <option value="Cash expenses">Cash expenses</option>
-                                        <option value="Recharges">Recharges</option>
-                                        <option value="Transport">Transport</option>
-                                        <option value="Shopping">Shopping</option>
-                                        <option value="Bills">Bills</option>
-                                        <option value="Entertainment">Entertainment</option>
-                                        <option value="Health">Health</option>
-                                        <option value="Salary">Salary</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
+                                <input type="text" id="description" value="${state.description}" placeholder="Description" oninput="state.description = this.value">
+                                <input type="number" id="amount" value="${state.amount}" placeholder="Amount" step="0.01" oninput="state.amount = this.value">
+                                <select id="category" onchange="state.category = this.value">
+                                    <option value="Food">Food</option>
+                                    <option value="EMI">EMI</option>
+                                    <option value="Online shopping">Online shopping</option>
+                                    <option value="Donations">Donations</option>
+                                    <option value="Fuel">Fuel</option>
+                                    <option value="Cash expenses">Cash expenses</option>
+                                    <option value="Recharges">Recharges</option>
+                                    <option value="Transport">Transport</option>
+                                    <option value="Shopping">Shopping</option>
+                                    <option value="Bills">Bills</option>
+                                    <option value="Entertainment">Entertainment</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Salary">Salary</option>
+                                    <option value="Other">Other</option>
+                                </select>
                             </div>
                             <div class="btn-row">
-                                <button onclick="addTransaction('income')" class="btn btn-secondary" style="flex: 1;">
-                                    💰 Add Money
-                                </button>
-                                <button onclick="addTransaction('expense')" class="btn btn-primary" style="flex: 1;">
-                                    💸 Add Expense
-                                </button>
+                                <button class="btn btn-secondary" onclick="addTransaction('income')">💰 Add Money</button>
+                                <button class="btn btn-primary" onclick="addTransaction('expense')">💸 Add Expense</button>
                             </div>
                         </div>
 
-                        <div class="transactions-section">
+                        <div class="transactions">
                             <h2>Recent Transactions</h2>
-                            <div class="transactions-list">
+                            <div class="transaction-list">
                                 ${state.userData.transactions.length === 0 ? `
-                                    <div class="empty-state">
-                                        No transactions yet. Add your first transaction above!
-                                    </div>
+                                    <div class="empty">No transactions yet. Add your first transaction above!</div>
                                 ` : state.userData.transactions.map(t => `
-                                    <div class="transaction-item transaction-${t.type}">
-                                        <div class="transaction-details">
+                                    <div class="transaction transaction-${t.type}">
+                                        <div class="transaction-info">
                                             <div class="transaction-title">${t.description}</div>
                                             <div class="transaction-category">${t.category}</div>
                                             <div class="transaction-date">${new Date(t.date).toLocaleString('en-IN')}</div>
                                         </div>
-                                        <div class="transaction-right">
-                                            <div class="transaction-amount ${t.type === 'income' ? 'text-green' : 'text-red'}">
+                                        <div style="display: flex; align-items: center;">
+                                            <span class="transaction-amount ${t.type === 'income' ? 'text-green' : 'text-red'}">
                                                 ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
-                                            </div>
-                                            <button onclick="deleteTransaction(${t.id})" class="btn btn-danger btn-small">
-                                                Delete
-                                            </button>
+                                            </span>
+                                            <button class="btn btn-danger" onclick="deleteTransaction(${t.id})">Delete</button>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -1149,60 +588,16 @@
                         </div>
 
                         <div class="backup-section">
-                            <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem; color: #1e40af;">
-                                🛡️ Data Protection
-                            </h3>
-                            <p style="font-size: 0.875rem; color: #6b7280;">
-                                Your data is automatically backed up. Click the Backup button above to export or import your data anytime.
-                            </p>
+                            <strong>🛡️ Data Protection:</strong> Export your data regularly to avoid losing it if you clear browser data.
                         </div>
                     </div>
                 </div>
             `;
 
-            // Set the selected category after render
             const categorySelect = document.getElementById('category');
             if (categorySelect) categorySelect.value = state.category;
         }
 
-        // UI update functions
-        function showSignup() {
-            state.showSignup = true;
-            state.showForgotPassword = false;
-            state.authError = '';
-            state.authSuccess = '';
-            render();
-        }
-
-        function showLogin() {
-            state.showSignup = false;
-            state.showForgotPassword = false;
-            state.authError = '';
-            state.authSuccess = '';
-            render();
-        }
-
-        function showForgotPassword() {
-            state.showForgotPassword = true;
-            state.showSignup = false;
-            state.authError = '';
-            state.authSuccess = '';
-            render();
-        }
-
-        function updateDescription(value) {
-            state.description = value;
-        }
-
-        function updateAmount(value) {
-            state.amount = value;
-        }
-
-        function updateCategory(value) {
-            state.category = value;
-        }
-
-        // Initialize app
         loadAllData();
     </script>
 </body>
