@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 export default function ExpenseTracker() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [users, setUsers] = useState({});
   const [userData, setUserData] = useState({ transactions: [], balance: 0 });
@@ -20,26 +21,37 @@ export default function ExpenseTracker() {
   useEffect(() => {
     loadAllData();
   }, []);
+  
+  // Auto-refresh data every 3 seconds when logged in
+  useEffect(() => {
+    if (isLoggedIn && currentUser) {
+      const interval = setInterval(() => {
+        refreshUserData();
+      }, 3000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [isLoggedIn, currentUser]);
 
   // Load all data from storage
   const loadAllData = async () => {
     try {
       setIsLoading(true);
       
-      // Load users data
-      const usersResult = await window.storage.get('expense_tracker_users');
+      // Load users data with shared=true for cross-device access
+      const usersResult = await window.storage.get('expense_tracker_users', true);
       if (usersResult && usersResult.value) {
         const loadedUsers = JSON.parse(usersResult.value);
         setUsers(loadedUsers);
       }
       
-      // Check if there's a logged-in user
+      // Check if there's a logged-in user (personal storage)
       const currentUserResult = await window.storage.get('expense_tracker_current_user');
       if (currentUserResult && currentUserResult.value) {
         const username = currentUserResult.value;
         
-        // Load user's data
-        const userDataResult = await window.storage.get(`expense_tracker_data_${username}`);
+        // Load user's data with shared=true for cross-device access
+        const userDataResult = await window.storage.get(`expense_tracker_data_${username}`, true);
         if (userDataResult && userDataResult.value) {
           const loadedUserData = JSON.parse(userDataResult.value);
           setCurrentUser(username);
@@ -54,10 +66,25 @@ export default function ExpenseTracker() {
     }
   };
 
+  // Refresh user data (for syncing across devices)
+  const refreshUserData = async () => {
+    if (!currentUser) return;
+    
+    try {
+      const userDataResult = await window.storage.get(`expense_tracker_data_${currentUser}`, true);
+      if (userDataResult && userDataResult.value) {
+        const loadedUserData = JSON.parse(userDataResult.value);
+        setUserData(loadedUserData);
+      }
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    }
+  };
+
   // Save users to storage
   const saveUsers = async (updatedUsers) => {
     try {
-      await window.storage.set('expense_tracker_users', JSON.stringify(updatedUsers));
+      await window.storage.set('expense_tracker_users', JSON.stringify(updatedUsers), true);
       setUsers(updatedUsers);
     } catch (error) {
       console.error('Error saving users:', error);
@@ -81,7 +108,7 @@ export default function ExpenseTracker() {
   // Save user data to storage
   const saveUserDataToStorage = async (username, data) => {
     try {
-      await window.storage.set(`expense_tracker_data_${username}`, JSON.stringify(data));
+      await window.storage.set(`expense_tracker_data_${username}`, JSON.stringify(data), true);
       showStatus('Data saved successfully!');
     } catch (error) {
       console.error('Error saving user data:', error);
@@ -95,19 +122,31 @@ export default function ExpenseTracker() {
     setTimeout(() => setStatusMessage(''), 3000);
   };
 
+  // Validate email
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   // Signup
   const handleSignup = async () => {
     const username = document.getElementById('signupUsername').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
     const password = document.getElementById('signupPassword').value;
     const confirmPassword = document.getElementById('signupPasswordConfirm').value;
 
-    if (!username || !password) {
+    if (!username || !email || !password) {
       setAuthError('Please fill in all fields');
       return;
     }
 
     if (username.length < 3) {
       setAuthError('Username must be at least 3 characters');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setAuthError('Please enter a valid email address');
       return;
     }
 
@@ -121,14 +160,22 @@ export default function ExpenseTracker() {
       return;
     }
 
+    // Check if username or email already exists
     if (users[username]) {
       setAuthError('Username already exists');
+      return;
+    }
+
+    const emailExists = Object.values(users).some(user => user.email === email);
+    if (emailExists) {
+      setAuthError('Email already registered');
       return;
     }
 
     const newUsers = {
       ...users,
       [username]: {
+        email: email,
         password: password,
         createdAt: new Date().toISOString()
       }
@@ -145,6 +192,7 @@ export default function ExpenseTracker() {
     
     // Clear form
     document.getElementById('signupUsername').value = '';
+    document.getElementById('signupEmail').value = '';
     document.getElementById('signupPassword').value = '';
     document.getElementById('signupPasswordConfirm').value = '';
     
@@ -156,24 +204,42 @@ export default function ExpenseTracker() {
 
   // Login
   const handleLogin = async () => {
-    const username = document.getElementById('loginUsername').value.trim();
+    const loginInput = document.getElementById('loginInput').value.trim();
     const password = document.getElementById('loginPassword').value;
 
-    if (!username || !password) {
-      setAuthError('Please enter username and password');
+    if (!loginInput || !password) {
+      setAuthError('Please enter username/email and password');
       return;
     }
 
-    const user = users[username];
+    // Find user by username or email
+    let username = null;
+    let user = null;
+
+    // Check if input is email or username
+    if (isValidEmail(loginInput)) {
+      // Search by email
+      for (const [uname, udata] of Object.entries(users)) {
+        if (udata.email === loginInput) {
+          username = uname;
+          user = udata;
+          break;
+        }
+      }
+    } else {
+      // Search by username
+      username = loginInput;
+      user = users[username];
+    }
 
     if (!user || user.password !== password) {
-      setAuthError('Invalid username or password');
+      setAuthError('Invalid username/email or password');
       return;
     }
 
     // Load user data
     try {
-      const userDataResult = await window.storage.get(`expense_tracker_data_${username}`);
+      const userDataResult = await window.storage.get(`expense_tracker_data_${username}`, true);
       let loadedData = { transactions: [], balance: 0 };
       
       if (userDataResult && userDataResult.value) {
@@ -194,12 +260,52 @@ export default function ExpenseTracker() {
       showStatus(`Welcome back, ${username}!`);
       
       // Clear form
-      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginInput').value = '';
       document.getElementById('loginPassword').value = '';
     } catch (error) {
       setAuthError('Error loading user data');
       console.error('Login error:', error);
     }
+  };
+
+  // Forgot Password
+  const handleForgotPassword = async () => {
+    const emailInput = document.getElementById('forgotEmail').value.trim();
+
+    if (!emailInput) {
+      setAuthError('Please enter your email address');
+      return;
+    }
+
+    if (!isValidEmail(emailInput)) {
+      setAuthError('Please enter a valid email address');
+      return;
+    }
+
+    // Find user by email
+    let foundUsername = null;
+    for (const [username, userData] of Object.entries(users)) {
+      if (userData.email === emailInput) {
+        foundUsername = username;
+        break;
+      }
+    }
+
+    if (!foundUsername) {
+      setAuthError('No account found with this email address');
+      return;
+    }
+
+    // Show password (in a real app, you'd send an email)
+    const userPassword = users[foundUsername].password;
+    setAuthSuccess(`Your password is: ${userPassword}\n\nUsername: ${foundUsername}\n\nPlease save this information and login.`);
+    setAuthError('');
+    
+    setTimeout(() => {
+      setShowForgotPassword(false);
+      setAuthSuccess('');
+      document.getElementById('forgotEmail').value = '';
+    }, 8000);
   };
 
   // Logout
@@ -210,6 +316,7 @@ export default function ExpenseTracker() {
       setCurrentUser(null);
       setUserData({ transactions: [], balance: 0 });
       setShowSignup(false);
+      setShowForgotPassword(false);
     }
   };
 
@@ -334,30 +441,31 @@ export default function ExpenseTracker() {
           </div>
 
           {authError && (
-            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded mb-4">
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-3 rounded mb-4 text-sm">
               {authError}
             </div>
           )}
 
           {authSuccess && (
-            <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-3 rounded mb-4">
+            <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-3 rounded mb-4 text-sm whitespace-pre-line">
               {authSuccess}
             </div>
           )}
 
-          {!showSignup ? (
+          {/* Login Form */}
+          {!showSignup && !showForgotPassword && (
             <div>
               <div className="mb-4">
-                <label className="block text-gray-700 font-medium mb-2">Username</label>
+                <label className="block text-gray-700 font-medium mb-2">Username or Email</label>
                 <input
                   type="text"
-                  id="loginUsername"
-                  placeholder="Enter your username"
+                  id="loginInput"
+                  placeholder="Enter your username or email"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
                   onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                 />
               </div>
-              <div className="mb-6">
+              <div className="mb-4">
                 <label className="block text-gray-700 font-medium mb-2">Password</label>
                 <input
                   type="password"
@@ -366,6 +474,14 @@ export default function ExpenseTracker() {
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
                   onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
                 />
+              </div>
+              <div className="mb-6 text-right">
+                <button
+                  onClick={() => { setShowForgotPassword(true); setAuthError(''); setAuthSuccess(''); }}
+                  className="text-blue-600 text-sm hover:underline"
+                >
+                  Forgot Password?
+                </button>
               </div>
               <button
                 onClick={handleLogin}
@@ -376,14 +492,17 @@ export default function ExpenseTracker() {
               <div className="text-center text-gray-600">
                 Don't have an account?{' '}
                 <button
-                  onClick={() => { setShowSignup(true); setAuthError(''); }}
+                  onClick={() => { setShowSignup(true); setAuthError(''); setAuthSuccess(''); }}
                   className="text-blue-600 font-bold hover:underline"
                 >
                   Sign Up
                 </button>
               </div>
             </div>
-          ) : (
+          )}
+
+          {/* Signup Form */}
+          {showSignup && !showForgotPassword && (
             <div>
               <div className="mb-4">
                 <label className="block text-gray-700 font-medium mb-2">Username</label>
@@ -391,6 +510,15 @@ export default function ExpenseTracker() {
                   type="text"
                   id="signupUsername"
                   placeholder="Choose a username"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 font-medium mb-2">Email</label>
+                <input
+                  type="email"
+                  id="signupEmail"
+                  placeholder="Enter your email"
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
                 />
               </div>
@@ -421,10 +549,43 @@ export default function ExpenseTracker() {
               <div className="text-center text-gray-600">
                 Already have an account?{' '}
                 <button
-                  onClick={() => { setShowSignup(false); setAuthError(''); }}
+                  onClick={() => { setShowSignup(false); setAuthError(''); setAuthSuccess(''); }}
                   className="text-blue-600 font-bold hover:underline"
                 >
                   Login
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Forgot Password Form */}
+          {showForgotPassword && (
+            <div>
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-800 mb-2">Forgot Password?</h2>
+                <p className="text-sm text-gray-600 mb-4">Enter your email address and we'll help you recover your account.</p>
+                <label className="block text-gray-700 font-medium mb-2">Email Address</label>
+                <input
+                  type="email"
+                  id="forgotEmail"
+                  placeholder="Enter your registered email"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none"
+                  onKeyPress={(e) => e.key === 'Enter' && handleForgotPassword()}
+                />
+              </div>
+              <button
+                onClick={handleForgotPassword}
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition mb-4"
+              >
+                Recover Account
+              </button>
+              <div className="text-center text-gray-600">
+                Remember your password?{' '}
+                <button
+                  onClick={() => { setShowForgotPassword(false); setAuthError(''); setAuthSuccess(''); }}
+                  className="text-blue-600 font-bold hover:underline"
+                >
+                  Back to Login
                 </button>
               </div>
             </div>
