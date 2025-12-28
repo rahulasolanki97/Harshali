@@ -193,8 +193,44 @@
             input.click();
         }
 
+        async function migrateOldData() {
+            try {
+                const oldUsers = localStorage.getItem('expense_tracker_users');
+                if (oldUsers) {
+                    const users = JSON.parse(oldUsers);
+                    const usersList = [];
+                    
+                    for (const [username, userData] of Object.entries(users)) {
+                        const oldData = localStorage.getItem(`expense_tracker_data_${username}`);
+                        const transactionsData = oldData ? JSON.parse(oldData) : { transactions: [], balance: 0 };
+                        
+                        await saveToCloud(`user_${username}`, {
+                            email: userData.email,
+                            password: userData.password,
+                            createdAt: userData.createdAt,
+                            data: transactionsData
+                        });
+                        usersList.push(username);
+                    }
+                    
+                    await saveToCloud('expense_tracker_users_list', usersList);
+                    
+                    const oldCurrentUser = localStorage.getItem('expense_tracker_current_user');
+                    if (oldCurrentUser) {
+                        await saveToCloud('expense_tracker_current_user', JSON.parse(oldCurrentUser));
+                    }
+                    
+                    console.log('Migration completed successfully!');
+                }
+            } catch (e) {
+                console.log('No old data to migrate or migration failed:', e);
+            }
+        }
+
         async function loadAllData() {
             try {
+                await migrateOldData();
+                
                 const currentUser = await getFromCloud('expense_tracker_current_user');
                 if (currentUser) {
                     const userData = await getFromCloud(`user_${currentUser}`);
