@@ -162,6 +162,16 @@
             display: none;
         }
 
+        .warning-message {
+            background: #fffbeb;
+            color: #f59e0b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f59e0b;
+            font-size: 0.9em;
+        }
+
         .header {
             background: linear-gradient(135deg, #ffd93d 0%, #ffaa00 100%);
             padding: 30px;
@@ -554,6 +564,10 @@
             <p>Track your finances securely</p>
             <div class="cloud-badge">☁️ Cloud Synced - Access Anywhere</div>
         </div>
+
+        <div class="warning-message">
+            ⚠️ <strong>Important:</strong> Make sure you've deployed the Google Apps Script and added the URL in the code!
+        </div>
         
         <div class="error-message" id="authError"></div>
         <div class="success-message" id="authSuccess"></div>
@@ -719,34 +733,54 @@
     </div>
 
     <script>
-        // ⚠️ REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+        // ⚠️⚠️⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️⚠️⚠️
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdtoUJtDmv0JnM1NlTg9k91t6_VYHXnAC-QfzXAjn9Huj8mjcCKkQTqBBJRc5jm4tb/exec';
 
         let currentUser = null;
         let transactions = [];
         let balance = 0;
 
-        // API Call Helper
+        // API Call Helper with better error handling
         async function callAPI(action, data = {}) {
+            // Check if URL is configured
+            if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+                throw new Error('Google Apps Script URL not configured. Please add your deployment URL in the code.');
+            }
+
             try {
-                // POST request (no-cors for initial save)
-                await fetch(SCRIPT_URL, {
+                console.log('Making API call:', action, data);
+                
+                // POST request
+                const postResponse = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'text/plain'
+                    },
                     body: JSON.stringify({ action, ...data })
                 });
 
-                // Wait for data to be saved
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                console.log('POST response status:', postResponse.status);
+
+                // Wait for Google Sheets to process
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 // GET request to retrieve data
                 const params = new URLSearchParams({ action, ...data, timestamp: Date.now() });
-                const getResponse = await fetch(`${SCRIPT_URL}?${params}`);
-                const result = await getResponse.json();
+                const getUrl = `${SCRIPT_URL}?${params.toString()}`;
+                console.log('GET URL:', getUrl);
+                
+                const getResponse = await fetch(getUrl);
+                console.log('GET response status:', getResponse.status);
+                
+                const text = await getResponse.text();
+                console.log('Raw response:', text);
+                
+                const result = JSON.parse(text);
+                console.log('Parsed result:', result);
+                
                 return result;
             } catch (error) {
-                console.error('API Error:', error);
+                console.error('API Error Details:', error);
                 throw error;
             }
         }
@@ -770,7 +804,7 @@
             
             setTimeout(() => {
                 toast.style.display = 'none';
-            }, 3000);
+            }, 4000);
         }
 
         // Auth UI functions
@@ -822,7 +856,7 @@
                 return;
             }
 
-            if (!email.includes('@')) {
+            if (!email.includes('@') || !email.includes('.')) {
                 showAuthError('Please enter a valid email');
                 return;
             }
@@ -840,142 +874,17 @@
             try {
                 document.getElementById('signupBtn').disabled = true;
                 showLoading('Creating account...');
+                console.log('Attempting signup for:', username);
                 
                 const result = await callAPI('signup', { username, email, password });
                 
                 hideLoading();
-                updateDisplay();
-                showStatus('Transaction added successfully!');
-            } catch (e) {
-                hideLoading();
-                showStatus('Failed to save transaction', true);
-            }
-        }
-
-        // Delete transaction
-        async function deleteTransaction(id) {
-            if (!confirm('Delete this transaction?')) return;
-
-            const transaction = transactions.find(t => t.id === id);
-            if (!transaction) return;
-
-            try {
-                showLoading('Deleting transaction...');
-                
-                await callAPI('deleteTransaction', {
-                    username: currentUser,
-                    transactionId: id
-                });
-                
-                if (transaction.type === 'income') {
-                    balance -= transaction.amount;
-                } else {
-                    balance += transaction.amount;
-                }
-
-                transactions = transactions.filter(t => t.id !== id);
-                
-                hideLoading();
-                updateDisplay();
-                showStatus('Transaction deleted');
-            } catch (e) {
-                hideLoading();
-                showStatus('Failed to delete transaction', true);
-            }
-        }
-
-        // Update display
-        function updateDisplay() {
-            updateBalance();
-            updateSummaries();
-            updateTransactionList();
-        }
-
-        // Update balance
-        function updateBalance() {
-            document.getElementById('balance').textContent = `₹${balance.toFixed(2)}`;
-        }
-
-        // Calculate summaries
-        function updateSummaries() {
-            const now = new Date();
-            const periods = {
-                daily: 1,
-                weekly: 7,
-                monthly: 30,
-                yearly: 365
-            };
-
-            Object.keys(periods).forEach(period => {
-                const days = periods[period];
-                const cutoffDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
-                
-                let income = 0;
-                let expense = 0;
-
-                transactions.forEach(t => {
-                    const tDate = new Date(t.date);
-                    if (tDate >= cutoffDate) {
-                        if (t.type === 'income') {
-                            income += t.amount;
-                        } else {
-                            expense += t.amount;
-                        }
-                    }
-                });
-
-                const net = income - expense;
-
-                document.getElementById(`${period}Income`).textContent = `₹${income.toFixed(2)}`;
-                document.getElementById(`${period}Expense`).textContent = `₹${expense.toFixed(2)}`;
-                document.getElementById(`${period}Net`).textContent = `₹${net.toFixed(2)}`;
-            });
-        }
-
-        // Update transaction list
-        function updateTransactionList() {
-            const listEl = document.getElementById('transactionList');
-            
-            if (transactions.length === 0) {
-                listEl.innerHTML = '<div class="empty-state">No transactions yet. Add your first transaction above!</div>';
-                return;
-            }
-
-            listEl.innerHTML = transactions.map(t => {
-                const date = new Date(t.date);
-                const dateStr = date.toLocaleDateString('en-IN', { 
-                    day: 'numeric', 
-                    month: 'short', 
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                return `
-                    <div class="transaction-item ${t.type}">
-                        <div class="transaction-details">
-                            <div class="transaction-description">${t.description}</div>
-                            <div class="transaction-category">${t.category}</div>
-                            <div class="transaction-date">${dateStr}</div>
-                        </div>
-                        <div class="transaction-amount ${t.type}">
-                            ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
-                        </div>
-                        <button class="delete-btn" onclick="deleteTransaction(${t.id})">Delete</button>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Initialize app on load
-        checkAutoLogin();
-    </script>
-</body>
-</html>
                 document.getElementById('signupBtn').disabled = false;
                 
+                console.log('Signup result:', result);
+                
                 if (result.success) {
-                    showAuthSuccess('Account created successfully! You can now login from any device.');
+                    showAuthSuccess('Account created successfully! You can now login.');
                     document.getElementById('signupUsername').value = '';
                     document.getElementById('signupEmail').value = '';
                     document.getElementById('signupPassword').value = '';
@@ -985,12 +894,13 @@
                         showLogin();
                     }, 2000);
                 } else {
-                    showAuthError(result.message || 'Signup failed');
+                    showAuthError(result.message || 'Signup failed. Please try again.');
                 }
             } catch (e) {
                 hideLoading();
                 document.getElementById('signupBtn').disabled = false;
-                showAuthError('Network error. Please check if Google Sheets is configured.');
+                console.error('Signup error:', e);
+                showAuthError('Error: ' + e.message);
             }
         }
 
@@ -1007,11 +917,14 @@
             try {
                 document.getElementById('loginBtn').disabled = true;
                 showLoading('Logging in...');
+                console.log('Attempting login for:', username);
                 
                 const result = await callAPI('login', { username, password });
                 
                 hideLoading();
                 document.getElementById('loginBtn').disabled = false;
+                
+                console.log('Login result:', result);
                 
                 if (result.success) {
                     currentUser = result.username || username;
@@ -1031,12 +944,13 @@
                     updateDisplay();
                     showStatus('Welcome back, ' + currentUser + '!');
                 } else {
-                    showAuthError(result.message || 'Invalid credentials');
+                    showAuthError(result.message || 'Invalid username or password');
                 }
             } catch (e) {
                 hideLoading();
                 document.getElementById('loginBtn').disabled = false;
-                showAuthError('Network error. Please check if Google Sheets is configured.');
+                console.error('Login error:', e);
+                showAuthError('Error: ' + e.message);
             }
         }
 
@@ -1063,70 +977,4 @@
                         
                         updateDisplay();
                     } else {
-                        localStorage.removeItem('expense_user');
-                        localStorage.removeItem('expense_pass');
-                    }
-                } catch (e) {
-                    hideLoading();
-                    console.error('Auto-login failed:', e);
-                }
-            }
-        }
-
-        // Logout
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                currentUser = null;
-                transactions = [];
-                balance = 0;
-                
-                localStorage.removeItem('expense_user');
-                localStorage.removeItem('expense_pass');
-                
-                document.getElementById('appScreen').classList.add('hidden');
-                document.getElementById('loginScreen').classList.remove('hidden');
-                showLogin();
-            }
-        }
-
-        // Add transaction
-        async function addTransaction(type) {
-            const description = document.getElementById('description').value.trim();
-            const amount = parseFloat(document.getElementById('amount').value);
-            const category = document.getElementById('category').value;
-
-            if (!description || !amount || amount <= 0) {
-                showStatus('Please enter valid description and amount!', true);
-                return;
-            }
-
-            const transaction = {
-                id: Date.now(),
-                type: type,
-                description: description,
-                amount: amount,
-                category: category,
-                date: new Date().toISOString()
-            };
-
-            try {
-                showLoading('Saving transaction...');
-                
-                await callAPI('addTransaction', {
-                    username: currentUser,
-                    transaction: transaction
-                });
-                
-                transactions.unshift(transaction);
-                
-                if (type === 'income') {
-                    balance += amount;
-                } else {
-                    balance -= amount;
-                }
-
-                document.getElementById('description').value = '';
-                document.getElementById('amount').value = '';
-
-                hideLoading();
-
+                        localStorage.remove
