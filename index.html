@@ -101,10 +101,18 @@
             category: 'Food'
         };
 
+        function checkCloudStorage() {
+            return window.storage && typeof window.storage.get === 'function';
+        }
+
         async function saveToCloud(key, value) {
             try {
-                await window.storage.set(key, JSON.stringify(value), false);
-                return true;
+                if (!checkCloudStorage()) {
+                    console.error('Cloud storage not available');
+                    return false;
+                }
+                const result = await window.storage.set(key, JSON.stringify(value), false);
+                return result !== null;
             } catch (e) {
                 console.error('Cloud save error:', e);
                 return false;
@@ -113,15 +121,22 @@
 
         async function getFromCloud(key) {
             try {
+                if (!checkCloudStorage()) {
+                    return null;
+                }
                 const result = await window.storage.get(key, false);
                 return result ? JSON.parse(result.value) : null;
             } catch (e) {
+                console.log('Get from cloud failed:', e);
                 return null;
             }
         }
 
         async function deleteFromCloud(key) {
             try {
+                if (!checkCloudStorage()) {
+                    return false;
+                }
                 await window.storage.delete(key, false);
                 return true;
             } catch (e) {
@@ -228,6 +243,23 @@
         }
 
         async function loadAllData() {
+            let retries = 0;
+            const maxRetries = 5;
+            
+            while (retries < maxRetries && !checkCloudStorage()) {
+                console.log('Waiting for cloud storage...', retries);
+                await new Promise(resolve => setTimeout(resolve, 500));
+                retries++;
+            }
+
+            if (!checkCloudStorage()) {
+                console.error('Cloud storage not available after retries');
+                state.isLoading = false;
+                state.authError = 'Cloud storage is not available. Please refresh the page.';
+                render();
+                return;
+            }
+
             try {
                 await migrateOldData();
                 
