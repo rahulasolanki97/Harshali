@@ -217,8 +217,8 @@
     </div>
 
     <script>
-        // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
-        const URL =     'https://script.google.com/macros/s/AKfycbyR6npQZh701XSZU7SNakA8mWwFMU6dDfwurqwi_fsJAARZVdWFl6AZr346sB7yScem/exec';
+        // ✅ YOUR GOOGLE APPS SCRIPT URL IS CONFIGURED
+        const URL = 'https://script.google.com/macros/s/AKfycbyR6npQZh701XSZU7SNakA8mWwFMU6dDfwurqwi_fsJAARZVdWFl6AZr346sB7yScem/exec';
 
         let user = null;
         let pass = null;
@@ -232,14 +232,14 @@
             const el = document.getElementById('error');
             el.textContent = msg;
             el.style.display = 'block';
-            setTimeout(() => el.style.display = 'none', 4000);
+            setTimeout(() => el.style.display = 'none', 5000);
         }
 
         function showSuccess(msg) {
             const el = document.getElementById('success');
             el.textContent = msg;
             el.style.display = 'block';
-            setTimeout(() => el.style.display = 'none', 4000);
+            setTimeout(() => el.style.display = 'none', 5000);
         }
 
         function toggleAuth() {
@@ -275,8 +275,16 @@
             show('loading');
 
             try {
-                const response = await fetch(`${URL}?action=signup&username=${username}&email=${email}&password=${password}`);
-                const result = await response.json();
+                console.log('Attempting signup...');
+                const signupUrl = `${URL}?action=signup&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+                
+                const response = await fetch(signupUrl);
+                console.log('Response status:', response.status);
+                
+                const text = await response.text();
+                console.log('Response:', text);
+                
+                const result = JSON.parse(text);
 
                 hide('loading');
 
@@ -286,13 +294,14 @@
                     document.getElementById('signupEmail').value = '';
                     document.getElementById('signupPass').value = '';
                     document.getElementById('signupPass2').value = '';
-                    setTimeout(toggleAuth, 1500);
+                    setTimeout(toggleAuth, 2000);
                 } else {
                     showError(result.message);
                 }
             } catch (e) {
                 hide('loading');
-                showError('Connection error: ' + e.message);
+                console.error('Signup error:', e);
+                showError('Error: ' + e.message);
             }
         }
 
@@ -308,8 +317,16 @@
             show('loading');
 
             try {
-                const response = await fetch(`${URL}?action=login&username=${username}&password=${password}`);
-                const result = await response.json();
+                console.log('Attempting login...');
+                const loginUrl = `${URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`;
+                
+                const response = await fetch(loginUrl);
+                console.log('Response status:', response.status);
+                
+                const text = await response.text();
+                console.log('Response:', text);
+                
+                const result = JSON.parse(text);
 
                 hide('loading');
 
@@ -331,7 +348,8 @@
                 }
             } catch (e) {
                 hide('loading');
-                showError('Connection error: ' + e.message);
+                console.error('Login error:', e);
+                showError('Error: ' + e.message);
             }
         }
 
@@ -386,6 +404,7 @@
                     document.getElementById('desc').value = '';
                     document.getElementById('amt').value = '';
                     updateUI();
+                    showSuccess(type === 'income' ? 'Income added!' : 'Expense added!');
                 }
             } catch (e) {
                 hide('loading');
@@ -394,6 +413,8 @@
         }
 
         async function del(index) {
+            if (!confirm('Delete this transaction?')) return;
+
             show('loading');
 
             try {
@@ -413,6 +434,7 @@
                     transactions = result.transactions;
                     balance = result.balance;
                     updateUI();
+                    showSuccess('Transaction deleted');
                 }
             } catch (e) {
                 hide('loading');
@@ -458,5 +480,3 @@
     </script>
 </body>
 </html>
-
-
