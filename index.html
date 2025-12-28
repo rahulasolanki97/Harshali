@@ -5,28 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Expense Tracker</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-
         .login-container {
             max-width: 450px;
             margin: 100px auto;
@@ -35,22 +20,15 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             padding: 40px;
         }
-
         .login-header {
             text-align: center;
             margin-bottom: 30px;
         }
-
         .login-header h1 {
             font-size: 2.5em;
             color: #333;
             margin-bottom: 10px;
         }
-
-        .login-header p {
-            color: #666;
-        }
-
         .cloud-badge {
             background: #10b981;
             color: white;
@@ -60,18 +38,24 @@
             display: inline-block;
             margin-top: 10px;
         }
-
+        .warning-message {
+            background: #fffbeb;
+            color: #f59e0b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f59e0b;
+            font-size: 0.9em;
+        }
         .form-group {
             margin-bottom: 20px;
         }
-
         .form-group label {
             display: block;
             margin-bottom: 8px;
             color: #333;
             font-weight: 500;
         }
-
         .form-group input {
             width: 100%;
             padding: 12px;
@@ -79,13 +63,11 @@
             border-radius: 10px;
             font-size: 1em;
         }
-
         .form-group input:focus {
             outline: none;
             border-color: #2563eb;
         }
-
-        .login-btn, .signup-btn, .logout-btn {
+        .btn {
             width: 100%;
             padding: 14px;
             border: none;
@@ -96,82 +78,38 @@
             transition: transform 0.2s;
             margin-bottom: 10px;
         }
-
-        .login-btn {
-            background: #2563eb;
-            color: white;
-        }
-
-        .signup-btn {
-            background: #ffd93d;
-            color: #333;
-        }
-
-        .logout-btn {
-            background: #ef4444;
-            color: white;
-            width: auto;
-            padding: 10px 20px;
-            font-size: 0.9em;
-        }
-
-        .login-btn:hover, .signup-btn:hover, .logout-btn:hover {
-            transform: translateY(-2px);
-        }
-
-        .login-btn:disabled, .signup-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
+        .btn:hover:not(:disabled) { transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-secondary { background: #ffd93d; color: #333; }
+        .btn-danger { background: #ef4444; color: white; width: auto; padding: 10px 20px; font-size: 0.9em; }
         .toggle-mode {
             text-align: center;
             margin-top: 20px;
             color: #666;
         }
-
         .toggle-mode a {
             color: #2563eb;
             text-decoration: none;
             font-weight: bold;
             cursor: pointer;
         }
-
-        .toggle-mode a:hover {
-            text-decoration: underline;
-        }
-
-        .error-message {
-            background: #fef2f2;
-            color: #ef4444;
+        .message {
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 20px;
-            border-left: 4px solid #ef4444;
             display: none;
         }
-
-        .success-message {
-            background: #f0fdf4;
-            color: #16a34a;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #16a34a;
-            display: none;
+        .error { background: #fef2f2; color: #ef4444; border-left: 4px solid #ef4444; }
+        .success { background: #f0fdf4; color: #16a34a; border-left: 4px solid #16a34a; }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
-
-        .warning-message {
-            background: #fffbeb;
-            color: #f59e0b;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #f59e0b;
-            font-size: 0.9em;
-        }
-
         .header {
             background: linear-gradient(135deg, #ffd93d 0%, #ffaa00 100%);
             padding: 30px;
@@ -179,12 +117,7 @@
             color: #333;
             position: relative;
         }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
         .user-info {
             position: absolute;
             top: 20px;
@@ -193,7 +126,6 @@
             align-items: center;
             gap: 15px;
         }
-
         .username-display {
             background: white;
             padding: 8px 15px;
@@ -201,109 +133,21 @@
             color: #333;
             font-weight: bold;
         }
-
         .balance-display {
             background: #2563eb;
             color: white;
             padding: 30px;
             text-align: center;
         }
-
-        .balance-amount {
-            font-size: 3em;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        .balance-label {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-
-        .summary-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            padding: 30px;
-            background: #f8f9fa;
-        }
-
-        .summary-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border-left: 5px solid #2563eb;
-        }
-
-        .summary-card.daily {
-            border-left-color: #ffd93d;
-        }
-
-        .summary-card.weekly {
-            border-left-color: #2563eb;
-        }
-
-        .summary-card.monthly {
-            border-left-color: #8b5cf6;
-        }
-
-        .summary-card.yearly {
-            border-left-color: #f59e0b;
-        }
-
-        .summary-title {
-            font-size: 1.1em;
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .summary-stats {
-            margin-top: 10px;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            font-size: 0.95em;
-        }
-
-        .stat-label {
-            color: #666;
-        }
-
-        .stat-value {
-            font-weight: bold;
-        }
-
-        .stat-value.income {
-            color: #16a34a;
-        }
-
-        .stat-value.expense {
-            color: #ef4444;
-        }
-
-        .stat-value.total {
-            color: #2563eb;
-            font-size: 1.3em;
-        }
-
-        .input-section {
-            padding: 30px;
-            background: #f8f9fa;
-        }
-
+        .balance-amount { font-size: 3em; font-weight: bold; margin: 10px 0; }
+        .input-section { padding: 30px; background: #f8f9fa; }
         .input-group {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
-
-        .input-group input,
-        .input-group select {
+        .input-group input, .input-group select {
             flex: 1;
             padding: 12px;
             border: 2px solid #e0e0e0;
@@ -311,18 +155,7 @@
             font-size: 1em;
             min-width: 150px;
         }
-
-        .input-group input:focus,
-        .input-group select:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-        }
-
+        .button-group { display: flex; gap: 10px; }
         button {
             flex: 1;
             padding: 12px 20px;
@@ -333,50 +166,10 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-
-        button:hover:not(:disabled) {
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        .add-money-btn {
-            background: #ffd93d;
-            color: #333;
-        }
-
-        .add-expense-btn {
-            background: #2563eb;
-            color: white;
-        }
-
-        .transactions-section {
-            padding: 30px;
-        }
-
-        .transactions-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .transactions-header h2 {
-            color: #333;
-        }
-
-        .transaction-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
+        button:hover:not(:disabled) { transform: translateY(-2px); }
+        .add-money-btn { background: #ffd93d; color: #333; }
+        .add-expense-btn { background: #2563eb; color: white; }
+        .transactions-section { padding: 30px; }
         .transaction-item {
             background: white;
             padding: 15px;
@@ -388,69 +181,27 @@
             align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
         .transaction-item.income {
             border-left-color: #ffd93d;
             background: #fffbeb;
         }
-
         .transaction-item.expense {
             border-left-color: #ef4444;
             background: #fef2f2;
         }
-
-        .transaction-details {
-            flex: 1;
-        }
-
-        .transaction-description {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .transaction-category {
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .transaction-date {
-            font-size: 0.8em;
-            color: #999;
-        }
-
-        .transaction-amount {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-left: 20px;
-        }
-
-        .transaction-amount.income {
-            color: #16a34a;
-        }
-
-        .transaction-amount.expense {
-            color: #ef4444;
-        }
-
+        .transaction-amount { font-size: 1.3em; font-weight: bold; }
+        .transaction-amount.income { color: #16a34a; }
+        .transaction-amount.expense { color: #ef4444; }
         .delete-btn {
             background: #ef4444;
             color: white;
-            border: none;
             padding: 5px 10px;
             border-radius: 5px;
-            cursor: pointer;
             margin-left: 10px;
             font-size: 0.8em;
         }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-
-        .loading-overlay {
+        .empty-state { text-align: center; padding: 40px; color: #999; }
+        .loading {
             position: fixed;
             top: 0;
             left: 0;
@@ -462,14 +213,12 @@
             justify-content: center;
             z-index: 9999;
         }
-
         .loading-content {
             background: white;
             padding: 30px;
             border-radius: 15px;
             text-align: center;
         }
-
         .spinner {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #2563eb;
@@ -479,13 +228,11 @@
             animation: spin 1s linear infinite;
             margin: 0 auto 20px;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .status-toast {
+        .toast {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -496,60 +243,20 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             z-index: 10000;
             display: none;
-            animation: slideIn 0.3s ease;
         }
-
-        .status-toast.error {
-            background: #ef4444;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
+        .toast.error { background: #ef4444; }
+        .hidden { display: none !important; }
         @media (max-width: 600px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .user-info {
-                position: static;
-                justify-content: center;
-                margin-top: 15px;
-            }
-
-            .balance-amount {
-                font-size: 2em;
-            }
-
-            .input-group {
-                flex-direction: column;
-            }
-
-            .button-group {
-                flex-direction: column;
-            }
-
-            .summary-section {
-                grid-template-columns: 1fr;
-            }
+            .user-info { position: static; justify-content: center; margin-top: 15px; }
+            .balance-amount { font-size: 2em; }
+            .input-group { flex-direction: column; }
+            .button-group { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-    <div class="status-toast" id="statusToast"></div>
-    <div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="toast" id="toast"></div>
+    <div class="loading hidden" id="loading">
         <div class="loading-content">
             <div class="spinner"></div>
             <p id="loadingText">Loading...</p>
@@ -566,22 +273,22 @@
         </div>
 
         <div class="warning-message">
-            ⚠️ <strong>Important:</strong> Make sure you've deployed the Google Apps Script and added the URL in the code!
+            ⚠️ <strong>Important:</strong> Add your Google Apps Script URL in line 1 of the JavaScript code below!
         </div>
         
-        <div class="error-message" id="authError"></div>
-        <div class="success-message" id="authSuccess"></div>
+        <div class="message error" id="authError"></div>
+        <div class="message success" id="authSuccess"></div>
         
         <div id="loginForm">
             <div class="form-group">
                 <label for="loginUsername">Username or Email</label>
-                <input type="text" id="loginUsername" placeholder="Enter your username or email" />
+                <input type="text" id="loginUsername" placeholder="Enter username or email" />
             </div>
             <div class="form-group">
                 <label for="loginPassword">Password</label>
-                <input type="password" id="loginPassword" placeholder="Enter your password" />
+                <input type="password" id="loginPassword" placeholder="Enter password" />
             </div>
-            <button class="login-btn" onclick="login()" id="loginBtn">Login</button>
+            <button class="btn btn-primary" onclick="login()" id="loginBtn">Login</button>
             <div class="toggle-mode">
                 Don't have an account? <a onclick="showSignup()">Sign Up</a>
             </div>
@@ -590,21 +297,21 @@
         <div id="signupForm" class="hidden">
             <div class="form-group">
                 <label for="signupUsername">Username</label>
-                <input type="text" id="signupUsername" placeholder="Choose a username (min 3 chars)" />
+                <input type="text" id="signupUsername" placeholder="Choose username (min 3 chars)" />
             </div>
             <div class="form-group">
                 <label for="signupEmail">Email</label>
-                <input type="email" id="signupEmail" placeholder="Enter your email" />
+                <input type="email" id="signupEmail" placeholder="Enter email" />
             </div>
             <div class="form-group">
                 <label for="signupPassword">Password</label>
-                <input type="password" id="signupPassword" placeholder="Choose a password (min 6 chars)" />
+                <input type="password" id="signupPassword" placeholder="Choose password (min 6 chars)" />
             </div>
             <div class="form-group">
                 <label for="signupPasswordConfirm">Confirm Password</label>
-                <input type="password" id="signupPasswordConfirm" placeholder="Confirm your password" />
+                <input type="password" id="signupPasswordConfirm" placeholder="Confirm password" />
             </div>
-            <button class="signup-btn" onclick="signup()" id="signupBtn">Sign Up</button>
+            <button class="btn btn-secondary" onclick="signup()" id="signupBtn">Sign Up</button>
             <div class="toggle-mode">
                 Already have an account? <a onclick="showLogin()">Login</a>
             </div>
@@ -618,87 +325,13 @@
             <p>Manage your daily finances</p>
             <div class="user-info">
                 <span class="username-display" id="currentUsername"></span>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+                <button class="btn btn-danger" onclick="logout()">Logout</button>
             </div>
         </div>
 
         <div class="balance-display">
-            <div class="balance-label">Current Balance</div>
+            <div>Current Balance</div>
             <div class="balance-amount" id="balance">₹0.00</div>
-        </div>
-
-        <div class="summary-section">
-            <div class="summary-card daily">
-                <div class="summary-title">📅 Daily Summary</div>
-                <div class="summary-stats">
-                    <div class="stat-row">
-                        <span class="stat-label">Income:</span>
-                        <span class="stat-value income" id="dailyIncome">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Expenses:</span>
-                        <span class="stat-value expense" id="dailyExpense">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Net:</span>
-                        <span class="stat-value total" id="dailyNet">₹0.00</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="summary-card weekly">
-                <div class="summary-title">📊 Weekly Summary</div>
-                <div class="summary-stats">
-                    <div class="stat-row">
-                        <span class="stat-label">Income:</span>
-                        <span class="stat-value income" id="weeklyIncome">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Expenses:</span>
-                        <span class="stat-value expense" id="weeklyExpense">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Net:</span>
-                        <span class="stat-value total" id="weeklyNet">₹0.00</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="summary-card monthly">
-                <div class="summary-title">📈 Monthly Summary</div>
-                <div class="summary-stats">
-                    <div class="stat-row">
-                        <span class="stat-label">Income:</span>
-                        <span class="stat-value income" id="monthlyIncome">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Expenses:</span>
-                        <span class="stat-value expense" id="monthlyExpense">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Net:</span>
-                        <span class="stat-value total" id="monthlyNet">₹0.00</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="summary-card yearly">
-                <div class="summary-title">📆 Yearly Summary</div>
-                <div class="summary-stats">
-                    <div class="stat-row">
-                        <span class="stat-label">Income:</span>
-                        <span class="stat-value income" id="yearlyIncome">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Expenses:</span>
-                        <span class="stat-value expense" id="yearlyExpense">₹0.00</span>
-                    </div>
-                    <div class="stat-row">
-                        <span class="stat-label">Net:</span>
-                        <span class="stat-value total" id="yearlyNet">₹0.00</span>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <div class="input-section">
@@ -723,119 +356,81 @@
         </div>
 
         <div class="transactions-section">
-            <div class="transactions-header">
-                <h2>Recent Transactions</h2>
-            </div>
-            <div class="transaction-list" id="transactionList">
+            <h2>Recent Transactions</h2>
+            <div id="transactionList">
                 <div class="empty-state">No transactions yet. Add your first transaction above!</div>
             </div>
         </div>
     </div>
 
     <script>
-        // ⚠️⚠️⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️⚠️⚠️
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdtoUJtDmv0JnM1NlTg9k91t6_VYHXnAC-QfzXAjn9Huj8mjcCKkQTqBBJRc5jm4tb/exec';
+        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'; // ⚠️ REPLACE THIS!
 
         let currentUser = null;
+        let currentPassword = null;
         let transactions = [];
         let balance = 0;
 
-        // API Call Helper with better error handling
+        // API Helper
         async function callAPI(action, data = {}) {
-            // Check if URL is configured
-            if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-                throw new Error('Google Apps Script URL not configured. Please add your deployment URL in the code.');
+            if (!SCRIPT_URL || SCRIPT_URL.includes('YOUR_GOOGLE')) {
+                throw new Error('Please add your Google Apps Script URL!');
             }
 
-            try {
-                console.log('Making API call:', action, data);
-                
-                // POST request
-                const postResponse = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'text/plain'
-                    },
-                    body: JSON.stringify({ action, ...data })
-                });
+            const payload = { action, ...data };
+            
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
 
-                console.log('POST response status:', postResponse.status);
-
-                // Wait for Google Sheets to process
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // GET request to retrieve data
-                const params = new URLSearchParams({ action, ...data, timestamp: Date.now() });
-                const getUrl = `${SCRIPT_URL}?${params.toString()}`;
-                console.log('GET URL:', getUrl);
-                
-                const getResponse = await fetch(getUrl);
-                console.log('GET response status:', getResponse.status);
-                
-                const text = await getResponse.text();
-                console.log('Raw response:', text);
-                
-                const result = JSON.parse(text);
-                console.log('Parsed result:', result);
-                
-                return result;
-            } catch (error) {
-                console.error('API Error Details:', error);
-                throw error;
-            }
+            const result = await response.json();
+            return result;
         }
 
-        // Show/hide loading
+        // UI Functions
         function showLoading(text = 'Loading...') {
             document.getElementById('loadingText').textContent = text;
-            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loading').classList.remove('hidden');
         }
 
         function hideLoading() {
-            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.getElementById('loading').classList.add('hidden');
         }
 
-        // Show status toast
-        function showStatus(message, isError = false) {
-            const toast = document.getElementById('statusToast');
-            toast.textContent = message;
-            toast.className = 'status-toast' + (isError ? ' error' : '');
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast' + (isError ? ' error' : '');
             toast.style.display = 'block';
-            
-            setTimeout(() => {
-                toast.style.display = 'none';
-            }, 4000);
+            setTimeout(() => toast.style.display = 'none', 4000);
         }
 
-        // Auth UI functions
         function showLogin() {
             document.getElementById('loginForm').classList.remove('hidden');
             document.getElementById('signupForm').classList.add('hidden');
-            clearAuthMessages();
+            document.getElementById('authError').style.display = 'none';
+            document.getElementById('authSuccess').style.display = 'none';
         }
 
         function showSignup() {
             document.getElementById('loginForm').classList.add('hidden');
             document.getElementById('signupForm').classList.remove('hidden');
-            clearAuthMessages();
-        }
-
-        function clearAuthMessages() {
             document.getElementById('authError').style.display = 'none';
             document.getElementById('authSuccess').style.display = 'none';
         }
 
-        function showAuthError(message) {
-            const errorEl = document.getElementById('authError');
-            errorEl.textContent = message;
-            errorEl.style.display = 'block';
+        function showAuthError(msg) {
+            const el = document.getElementById('authError');
+            el.textContent = msg;
+            el.style.display = 'block';
             document.getElementById('authSuccess').style.display = 'none';
         }
 
-        function showAuthSuccess(message) {
-            const successEl = document.getElementById('authSuccess');
-            successEl.textContent = message;
-            successEl.style.display = 'block';
+        function showAuthSuccess(msg) {
+            const el = document.getElementById('authSuccess');
+            el.textContent = msg;
+            el.style.display = 'block';
             document.getElementById('authError').style.display = 'none';
         }
 
@@ -844,10 +439,10 @@
             const username = document.getElementById('signupUsername').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
             const password = document.getElementById('signupPassword').value;
-            const confirmPassword = document.getElementById('signupPasswordConfirm').value;
+            const confirm = document.getElementById('signupPasswordConfirm').value;
 
             if (!username || !email || !password) {
-                showAuthError('Please fill in all fields');
+                showAuthError('Please fill all fields');
                 return;
             }
 
@@ -856,8 +451,8 @@
                 return;
             }
 
-            if (!email.includes('@') || !email.includes('.')) {
-                showAuthError('Please enter a valid email');
+            if (!email.includes('@')) {
+                showAuthError('Please enter valid email');
                 return;
             }
 
@@ -866,7 +461,7 @@
                 return;
             }
 
-            if (password !== confirmPassword) {
+            if (password !== confirm) {
                 showAuthError('Passwords do not match');
                 return;
             }
@@ -874,33 +469,26 @@
             try {
                 document.getElementById('signupBtn').disabled = true;
                 showLoading('Creating account...');
-                console.log('Attempting signup for:', username);
                 
                 const result = await callAPI('signup', { username, email, password });
                 
                 hideLoading();
                 document.getElementById('signupBtn').disabled = false;
                 
-                console.log('Signup result:', result);
-                
                 if (result.success) {
-                    showAuthSuccess('Account created successfully! You can now login.');
+                    showAuthSuccess('Account created! Please login.');
                     document.getElementById('signupUsername').value = '';
                     document.getElementById('signupEmail').value = '';
                     document.getElementById('signupPassword').value = '';
                     document.getElementById('signupPasswordConfirm').value = '';
-                    
-                    setTimeout(() => {
-                        showLogin();
-                    }, 2000);
+                    setTimeout(showLogin, 2000);
                 } else {
-                    showAuthError(result.message || 'Signup failed. Please try again.');
+                    showAuthError(result.message || 'Signup failed');
                 }
             } catch (e) {
                 hideLoading();
                 document.getElementById('signupBtn').disabled = false;
-                console.error('Signup error:', e);
-                showAuthError('Error: ' + e.message);
+                showAuthError(e.message);
             }
         }
 
@@ -910,71 +498,165 @@
             const password = document.getElementById('loginPassword').value;
 
             if (!username || !password) {
-                showAuthError('Please enter username/email and password');
+                showAuthError('Please enter username and password');
                 return;
             }
 
             try {
                 document.getElementById('loginBtn').disabled = true;
                 showLoading('Logging in...');
-                console.log('Attempting login for:', username);
                 
                 const result = await callAPI('login', { username, password });
                 
                 hideLoading();
                 document.getElementById('loginBtn').disabled = false;
                 
-                console.log('Login result:', result);
-                
                 if (result.success) {
-                    currentUser = result.username || username;
+                    currentUser = result.username;
+                    currentPassword = password;
                     transactions = result.data.transactions || [];
                     balance = result.data.balance || 0;
                     
-                    localStorage.setItem('expense_user', currentUser);
-                    localStorage.setItem('expense_pass', password);
-                    
-                    document.getElementById('loginUsername').value = '';
-                    document.getElementById('loginPassword').value = '';
+                    localStorage.setItem('user', currentUser);
+                    localStorage.setItem('pass', password);
                     
                     document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('appScreen').classList.remove('hidden');
                     document.getElementById('currentUsername').textContent = currentUser;
                     
                     updateDisplay();
-                    showStatus('Welcome back, ' + currentUser + '!');
+                    showToast('Welcome, ' + currentUser + '!');
                 } else {
-                    showAuthError(result.message || 'Invalid username or password');
+                    showAuthError(result.message || 'Invalid credentials');
                 }
             } catch (e) {
                 hideLoading();
                 document.getElementById('loginBtn').disabled = false;
-                console.error('Login error:', e);
-                showAuthError('Error: ' + e.message);
+                showAuthError(e.message);
             }
         }
 
-        // Auto login
-        async function checkAutoLogin() {
-            const savedUser = localStorage.getItem('expense_user');
-            const savedPass = localStorage.getItem('expense_pass');
+        // Auto Login
+        window.addEventListener('load', async () => {
+            const savedUser = localStorage.getItem('user');
+            const savedPass = localStorage.getItem('pass');
             
             if (savedUser && savedPass) {
-                try {
-                    showLoading('Auto-logging in...');
-                    const result = await callAPI('login', { username: savedUser, password: savedPass });
+                document.getElementById('loginUsername').value = savedUser;
+                document.getElementById('loginPassword').value = savedPass;
+            }
+        });
+
+        // Logout
+        function logout() {
+            localStorage.clear();
+            currentUser = null;
+            currentPassword = null;
+            transactions = [];
+            balance = 0;
+            
+            document.getElementById('appScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            showLogin();
+            showToast('Logged out successfully');
+        }
+
+        // Add Transaction
+        async function addTransaction(type) {
+            const desc = document.getElementById('description').value.trim();
+            const amt = parseFloat(document.getElementById('amount').value);
+            const cat = document.getElementById('category').value;
+
+            if (!desc || !amt || amt <= 0) {
+                showToast('Please enter valid description and amount', true);
+                return;
+            }
+
+            try {
+                showLoading('Adding transaction...');
+                
+                const transaction = {
+                    type,
+                    description: desc,
+                    amount: amt,
+                    category: cat,
+                    date: new Date().toISOString()
+                };
+
+                const result = await callAPI('addTransaction', {
+                    username: currentUser,
+                    transaction: JSON.stringify(transaction)
+                });
+
+                hideLoading();
+
+                if (result.success) {
+                    transactions = result.data.transactions || [];
+                    balance = result.data.balance || 0;
                     
-                    hideLoading();
+                    document.getElementById('description').value = '';
+                    document.getElementById('amount').value = '';
                     
-                    if (result.success) {
-                        currentUser = result.username || savedUser;
-                        transactions = result.data.transactions || [];
-                        balance = result.data.balance || 0;
-                        
-                        document.getElementById('loginScreen').classList.add('hidden');
-                        document.getElementById('appScreen').classList.remove('hidden');
-                        document.getElementById('currentUsername').textContent = currentUser;
-                        
-                        updateDisplay();
-                    } else {
-                        localStorage.remove
+                    updateDisplay();
+                    showToast(type === 'income' ? 'Income added!' : 'Expense added!');
+                } else {
+                    showToast('Failed to add transaction', true);
+                }
+            } catch (e) {
+                hideLoading();
+                showToast(e.message, true);
+            }
+        }
+
+        // Delete Transaction
+        async function deleteTransaction(index) {
+            try {
+                showLoading('Deleting...');
+                
+                const result = await callAPI('deleteTransaction', {
+                    username: currentUser,
+                    index: index
+                });
+
+                hideLoading();
+
+                if (result.success) {
+                    transactions = result.data.transactions || [];
+                    balance = result.data.balance || 0;
+                    updateDisplay();
+                    showToast('Transaction deleted');
+                }
+            } catch (e) {
+                hideLoading();
+                showToast(e.message, true);
+            }
+        }
+
+        // Update Display
+        function updateDisplay() {
+            document.getElementById('balance').textContent = `₹${balance.toFixed(2)}`;
+            
+            const list = document.getElementById('transactionList');
+            if (transactions.length === 0) {
+                list.innerHTML = '<div class="empty-state">No transactions yet. Add your first transaction above!</div>';
+                return;
+            }
+
+            list.innerHTML = transactions.map((t, i) => `
+                <div class="transaction-item ${t.type}">
+                    <div>
+                        <div style="font-weight: bold">${t.description}</div>
+                        <div style="font-size: 0.9em; color: #666">${t.category} • ${new Date(t.date).toLocaleDateString()}</div>
+                    </div>
+                    <div style="display: flex; align-items: center">
+                        <div class="transaction-amount ${t.type}">
+                            ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
+                        </div>
+                        <button class="delete-btn" onclick="deleteTransaction(${i})">Delete</button>
+                    </div>
+                </div>
+            `).reverse().join('');
+        }
+    </script>
+</body>
+</html>
