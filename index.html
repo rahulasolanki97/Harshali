@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Expense Tracker</title>
+    <title>Expense Tracker</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -12,651 +12,449 @@
             min-height: 100vh;
             padding: 20px;
         }
-        .login-container {
-            max-width: 450px;
-            margin: 100px auto;
+        .box {
+            max-width: 500px;
+            margin: 50px auto;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 40px;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
-        .login-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .login-header h1 {
-            font-size: 2.5em;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .cloud-badge {
+        h1 { text-align: center; color: #333; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 20px; }
+        .badge {
             background: #10b981;
             color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
+            padding: 5px 12px;
+            border-radius: 15px;
             font-size: 0.85em;
             display: inline-block;
-            margin-top: 10px;
-        }
-        .warning-message {
-            background: #fffbeb;
-            color: #f59e0b;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #f59e0b;
-            font-size: 0.9em;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1em;
-        }
-        .form-group input:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-bottom: 10px;
-        }
-        .btn:hover:not(:disabled) { transform: translateY(-2px); }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .btn-primary { background: #2563eb; color: white; }
-        .btn-secondary { background: #ffd93d; color: #333; }
-        .btn-danger { background: #ef4444; color: white; width: auto; padding: 10px 20px; font-size: 0.9em; }
-        .toggle-mode {
+            margin: 10px auto;
             text-align: center;
-            margin-top: 20px;
-            color: #666;
+            width: 100%;
         }
-        .toggle-mode a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .message {
-            padding: 12px;
+        .alert {
+            padding: 10px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin: 10px 0;
             display: none;
         }
-        .error { background: #fef2f2; color: #ef4444; border-left: 4px solid #ef4444; }
-        .success { background: #f0fdf4; color: #16a34a; border-left: 4px solid #16a34a; }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #ffd93d 0%, #ffaa00 100%);
-            padding: 30px;
-            text-align: center;
-            color: #333;
-            position: relative;
-        }
-        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        .user-info {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .username-display {
-            background: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            color: #333;
-            font-weight: bold;
-        }
-        .balance-display {
-            background: #2563eb;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        .balance-amount { font-size: 3em; font-weight: bold; margin: 10px 0; }
-        .input-section { padding: 30px; background: #f8f9fa; }
-        .input-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .input-group input, .input-group select {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
+        .alert.error { background: #fee; color: #c33; border-left: 4px solid #c33; }
+        .alert.success { background: #efe; color: #3a3; border-left: 4px solid #3a3; }
+        .input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 8px 0; 
+            border: 2px solid #ddd; 
+            border-radius: 8px;
             font-size: 1em;
-            min-width: 150px;
         }
-        .button-group { display: flex; gap: 10px; }
-        button {
-            flex: 1;
-            padding: 12px 20px;
+        .input:focus { outline: none; border-color: #2563eb; }
+        .btn {
+            width: 100%;
+            padding: 12px;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 1em;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s;
+            margin: 8px 0;
         }
-        button:hover:not(:disabled) { transform: translateY(-2px); }
-        .add-money-btn { background: #ffd93d; color: #333; }
-        .add-expense-btn { background: #2563eb; color: white; }
-        .transactions-section { padding: 30px; }
-        .transaction-item {
-            background: white;
-            padding: 15px;
-            margin-bottom: 10px;
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-secondary { background: #ffd93d; color: #333; }
+        .btn-danger { background: #ef4444; color: white; }
+        .link { 
+            text-align: center; 
+            margin: 15px 0; 
+            color: #666; 
+        }
+        .link a { 
+            color: #2563eb; 
+            cursor: pointer; 
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .balance {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
             border-radius: 10px;
-            border-left: 4px solid #2563eb;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .balance-amount { font-size: 2.5em; font-weight: bold; }
+        .transaction {
+            background: #f9f9f9;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        .transaction-item.income {
-            border-left-color: #ffd93d;
-            background: #fffbeb;
-        }
-        .transaction-item.expense {
-            border-left-color: #ef4444;
-            background: #fef2f2;
-        }
-        .transaction-amount { font-size: 1.3em; font-weight: bold; }
-        .transaction-amount.income { color: #16a34a; }
-        .transaction-amount.expense { color: #ef4444; }
-        .delete-btn {
-            background: #ef4444;
-            color: white;
+        .transaction.income { background: #fffbeb; border-left: 4px solid #ffd93d; }
+        .transaction.expense { background: #fef2f2; border-left: 4px solid #ef4444; }
+        .amount { font-weight: bold; font-size: 1.2em; }
+        .amount.income { color: #16a34a; }
+        .amount.expense { color: #ef4444; }
+        .small-btn {
             padding: 5px 10px;
-            border-radius: 5px;
-            margin-left: 10px;
             font-size: 0.8em;
+            margin-left: 10px;
         }
-        .empty-state { text-align: center; padding: 40px; color: #999; }
+        .hidden { display: none !important; }
         .loading {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.7);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
-        }
-        .loading-content {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
+            z-index: 999;
         }
         .spinner {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #2563eb;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #10b981;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            z-index: 10000;
-            display: none;
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
         }
-        .toast.error { background: #ef4444; }
-        .hidden { display: none !important; }
-        @media (max-width: 600px) {
-            .user-info { position: static; justify-content: center; margin-top: 15px; }
-            .balance-amount { font-size: 2em; }
-            .input-group { flex-direction: column; }
-            .button-group { flex-direction: column; }
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
     </style>
 </head>
 <body>
-    <div class="toast" id="toast"></div>
     <div class="loading hidden" id="loading">
-        <div class="loading-content">
+        <div style="background: white; padding: 30px; border-radius: 15px;">
             <div class="spinner"></div>
-            <p id="loadingText">Loading...</p>
         </div>
     </div>
 
-    <!-- Login/Signup Screen -->
-    <div class="login-container" id="loginScreen">
-        <div class="login-header">
-            <h1>💰</h1>
-            <h1>Expense Tracker</h1>
-            <p>Track your finances securely</p>
-            <div class="cloud-badge">☁️ Cloud Synced - Access Anywhere</div>
-        </div>
-
-        <div class="warning-message">
-            ⚠️ <strong>Important:</strong> Add your Google Apps Script URL in line 1 of the JavaScript code below!
-        </div>
+    <!-- LOGIN/SIGNUP -->
+    <div class="box" id="authBox">
+        <h1>💰 Expense Tracker</h1>
+        <p class="subtitle">Track your finances</p>
+        <div class="badge">☁️ Cloud Synced</div>
         
-        <div class="message error" id="authError"></div>
-        <div class="message success" id="authSuccess"></div>
+        <div class="alert error" id="error"></div>
+        <div class="alert success" id="success"></div>
         
+        <!-- Login Form -->
         <div id="loginForm">
-            <div class="form-group">
-                <label for="loginUsername">Username or Email</label>
-                <input type="text" id="loginUsername" placeholder="Enter username or email" />
-            </div>
-            <div class="form-group">
-                <label for="loginPassword">Password</label>
-                <input type="password" id="loginPassword" placeholder="Enter password" />
-            </div>
-            <button class="btn btn-primary" onclick="login()" id="loginBtn">Login</button>
-            <div class="toggle-mode">
-                Don't have an account? <a onclick="showSignup()">Sign Up</a>
+            <input type="text" class="input" id="loginUser" placeholder="Username or Email">
+            <input type="password" class="input" id="loginPass" placeholder="Password">
+            <button class="btn btn-primary" onclick="login()">Login</button>
+            <div class="link">
+                Don't have an account? <a onclick="toggleAuth()">Sign Up</a>
             </div>
         </div>
         
+        <!-- Signup Form -->
         <div id="signupForm" class="hidden">
-            <div class="form-group">
-                <label for="signupUsername">Username</label>
-                <input type="text" id="signupUsername" placeholder="Choose username (min 3 chars)" />
-            </div>
-            <div class="form-group">
-                <label for="signupEmail">Email</label>
-                <input type="email" id="signupEmail" placeholder="Enter email" />
-            </div>
-            <div class="form-group">
-                <label for="signupPassword">Password</label>
-                <input type="password" id="signupPassword" placeholder="Choose password (min 6 chars)" />
-            </div>
-            <div class="form-group">
-                <label for="signupPasswordConfirm">Confirm Password</label>
-                <input type="password" id="signupPasswordConfirm" placeholder="Confirm password" />
-            </div>
-            <button class="btn btn-secondary" onclick="signup()" id="signupBtn">Sign Up</button>
-            <div class="toggle-mode">
-                Already have an account? <a onclick="showLogin()">Login</a>
+            <input type="text" class="input" id="signupUser" placeholder="Username (min 3 chars)">
+            <input type="email" class="input" id="signupEmail" placeholder="Email">
+            <input type="password" class="input" id="signupPass" placeholder="Password (min 6 chars)">
+            <input type="password" class="input" id="signupPass2" placeholder="Confirm Password">
+            <button class="btn btn-secondary" onclick="signup()">Sign Up</button>
+            <div class="link">
+                Already have an account? <a onclick="toggleAuth()">Login</a>
             </div>
         </div>
     </div>
 
-    <!-- Main App Screen -->
-    <div class="container hidden" id="appScreen">
+    <!-- MAIN APP -->
+    <div class="container hidden" id="app">
         <div class="header">
-            <h1>💰 Expense Tracker</h1>
-            <p>Manage your daily finances</p>
-            <div class="user-info">
-                <span class="username-display" id="currentUsername"></span>
-                <button class="btn btn-danger" onclick="logout()">Logout</button>
+            <div>
+                <h1>💰 Expense Tracker</h1>
+                <p>Welcome, <strong id="userName"></strong></p>
             </div>
+            <button class="btn btn-danger small-btn" onclick="logout()">Logout</button>
         </div>
 
-        <div class="balance-display">
-            <div>Current Balance</div>
-            <div class="balance-amount" id="balance">₹0.00</div>
-        </div>
+        <div class="box">
+            <div class="balance">
+                <div>Current Balance</div>
+                <div class="balance-amount" id="balance">₹0.00</div>
+            </div>
 
-        <div class="input-section">
-            <div class="input-group">
-                <input type="text" id="description" placeholder="Description" />
-                <input type="number" id="amount" placeholder="Amount" step="0.01" />
-                <select id="category">
-                    <option value="Food">Food</option>
-                    <option value="Transport">Transport</option>
-                    <option value="Shopping">Shopping</option>
-                    <option value="Bills">Bills</option>
-                    <option value="Entertainment">Entertainment</option>
-                    <option value="Health">Health</option>
-                    <option value="Salary">Salary</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="button-group">
-                <button class="add-money-btn" onclick="addTransaction('income')">💰 Add Money</button>
-                <button class="add-expense-btn" onclick="addTransaction('expense')">💸 Add Expense</button>
-            </div>
-        </div>
+            <input type="text" class="input" id="desc" placeholder="Description">
+            <input type="number" class="input" id="amt" placeholder="Amount">
+            <select class="input" id="cat">
+                <option>Food</option>
+                <option>Transport</option>
+                <option>Shopping</option>
+                <option>Bills</option>
+                <option>Entertainment</option>
+                <option>Health</option>
+                <option>Salary</option>
+                <option>Other</option>
+            </select>
 
-        <div class="transactions-section">
-            <h2>Recent Transactions</h2>
-            <div id="transactionList">
-                <div class="empty-state">No transactions yet. Add your first transaction above!</div>
-            </div>
+            <button class="btn btn-secondary" onclick="add('income')">💰 Add Income</button>
+            <button class="btn btn-primary" onclick="add('expense')">💸 Add Expense</button>
+
+            <h3 style="margin-top: 30px; margin-bottom: 10px;">Transactions</h3>
+            <div id="list"></div>
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'; // ⚠️ REPLACE THIS!
+        // ⚠️ PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
+        const URL = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec';
 
-        let currentUser = null;
-        let currentPassword = null;
+        let user = null;
+        let pass = null;
         let transactions = [];
         let balance = 0;
 
-        // API Helper
-        async function callAPI(action, data = {}) {
-            if (!SCRIPT_URL || SCRIPT_URL.includes('YOUR_GOOGLE')) {
-                throw new Error('Please add your Google Apps Script URL!');
-            }
+        function show(id) { document.getElementById(id).classList.remove('hidden'); }
+        function hide(id) { document.getElementById(id).classList.add('hidden'); }
 
-            const payload = { action, ...data };
-            
-            const response = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-            return result;
-        }
-
-        // UI Functions
-        function showLoading(text = 'Loading...') {
-            document.getElementById('loadingText').textContent = text;
-            document.getElementById('loading').classList.remove('hidden');
-        }
-
-        function hideLoading() {
-            document.getElementById('loading').classList.add('hidden');
-        }
-
-        function showToast(msg, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.className = 'toast' + (isError ? ' error' : '');
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 4000);
-        }
-
-        function showLogin() {
-            document.getElementById('loginForm').classList.remove('hidden');
-            document.getElementById('signupForm').classList.add('hidden');
-            document.getElementById('authError').style.display = 'none';
-            document.getElementById('authSuccess').style.display = 'none';
-        }
-
-        function showSignup() {
-            document.getElementById('loginForm').classList.add('hidden');
-            document.getElementById('signupForm').classList.remove('hidden');
-            document.getElementById('authError').style.display = 'none';
-            document.getElementById('authSuccess').style.display = 'none';
-        }
-
-        function showAuthError(msg) {
-            const el = document.getElementById('authError');
+        function showError(msg) {
+            const el = document.getElementById('error');
             el.textContent = msg;
             el.style.display = 'block';
-            document.getElementById('authSuccess').style.display = 'none';
+            setTimeout(() => el.style.display = 'none', 4000);
         }
 
-        function showAuthSuccess(msg) {
-            const el = document.getElementById('authSuccess');
+        function showSuccess(msg) {
+            const el = document.getElementById('success');
             el.textContent = msg;
             el.style.display = 'block';
-            document.getElementById('authError').style.display = 'none';
+            setTimeout(() => el.style.display = 'none', 4000);
         }
 
-        // Signup
+        function toggleAuth() {
+            document.getElementById('loginForm').classList.toggle('hidden');
+            document.getElementById('signupForm').classList.toggle('hidden');
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }
+
         async function signup() {
-            const username = document.getElementById('signupUsername').value.trim();
+            const username = document.getElementById('signupUser').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
-            const password = document.getElementById('signupPassword').value;
-            const confirm = document.getElementById('signupPasswordConfirm').value;
+            const password = document.getElementById('signupPass').value;
+            const confirm = document.getElementById('signupPass2').value;
 
             if (!username || !email || !password) {
-                showAuthError('Please fill all fields');
+                showError('Please fill all fields');
                 return;
             }
-
             if (username.length < 3) {
-                showAuthError('Username must be at least 3 characters');
+                showError('Username must be at least 3 characters');
                 return;
             }
-
-            if (!email.includes('@')) {
-                showAuthError('Please enter valid email');
-                return;
-            }
-
             if (password.length < 6) {
-                showAuthError('Password must be at least 6 characters');
+                showError('Password must be at least 6 characters');
+                return;
+            }
+            if (password !== confirm) {
+                showError('Passwords do not match');
                 return;
             }
 
-            if (password !== confirm) {
-                showAuthError('Passwords do not match');
-                return;
-            }
+            show('loading');
 
             try {
-                document.getElementById('signupBtn').disabled = true;
-                showLoading('Creating account...');
-                
-                const result = await callAPI('signup', { username, email, password });
-                
-                hideLoading();
-                document.getElementById('signupBtn').disabled = false;
-                
+                const response = await fetch(`${URL}?action=signup&username=${username}&email=${email}&password=${password}`);
+                const result = await response.json();
+
+                hide('loading');
+
                 if (result.success) {
-                    showAuthSuccess('Account created! Please login.');
-                    document.getElementById('signupUsername').value = '';
+                    showSuccess(result.message);
+                    document.getElementById('signupUser').value = '';
                     document.getElementById('signupEmail').value = '';
-                    document.getElementById('signupPassword').value = '';
-                    document.getElementById('signupPasswordConfirm').value = '';
-                    setTimeout(showLogin, 2000);
+                    document.getElementById('signupPass').value = '';
+                    document.getElementById('signupPass2').value = '';
+                    setTimeout(toggleAuth, 1500);
                 } else {
-                    showAuthError(result.message || 'Signup failed');
+                    showError(result.message);
                 }
             } catch (e) {
-                hideLoading();
-                document.getElementById('signupBtn').disabled = false;
-                showAuthError(e.message);
+                hide('loading');
+                showError('Connection error: ' + e.message);
             }
         }
 
-        // Login
         async function login() {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
+            const username = document.getElementById('loginUser').value.trim();
+            const password = document.getElementById('loginPass').value;
 
             if (!username || !password) {
-                showAuthError('Please enter username and password');
+                showError('Please enter username and password');
                 return;
             }
 
+            show('loading');
+
             try {
-                document.getElementById('loginBtn').disabled = true;
-                showLoading('Logging in...');
-                
-                const result = await callAPI('login', { username, password });
-                
-                hideLoading();
-                document.getElementById('loginBtn').disabled = false;
-                
+                const response = await fetch(`${URL}?action=login&username=${username}&password=${password}`);
+                const result = await response.json();
+
+                hide('loading');
+
                 if (result.success) {
-                    currentUser = result.username;
-                    currentPassword = password;
-                    transactions = result.data.transactions || [];
-                    balance = result.data.balance || 0;
-                    
-                    localStorage.setItem('user', currentUser);
-                    localStorage.setItem('pass', password);
-                    
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('appScreen').classList.remove('hidden');
-                    document.getElementById('currentUsername').textContent = currentUser;
-                    
-                    updateDisplay();
-                    showToast('Welcome, ' + currentUser + '!');
+                    user = result.username;
+                    pass = password;
+                    transactions = result.transactions || [];
+                    balance = result.balance || 0;
+
+                    localStorage.setItem('user', user);
+                    localStorage.setItem('pass', pass);
+
+                    hide('authBox');
+                    show('app');
+                    document.getElementById('userName').textContent = user;
+                    updateUI();
                 } else {
-                    showAuthError(result.message || 'Invalid credentials');
+                    showError(result.message);
                 }
             } catch (e) {
-                hideLoading();
-                document.getElementById('loginBtn').disabled = false;
-                showAuthError(e.message);
+                hide('loading');
+                showError('Connection error: ' + e.message);
             }
         }
 
-        // Auto Login
-        window.addEventListener('load', async () => {
-            const savedUser = localStorage.getItem('user');
-            const savedPass = localStorage.getItem('pass');
-            
-            if (savedUser && savedPass) {
-                document.getElementById('loginUsername').value = savedUser;
-                document.getElementById('loginPassword').value = savedPass;
-            }
-        });
-
-        // Logout
         function logout() {
             localStorage.clear();
-            currentUser = null;
-            currentPassword = null;
+            user = null;
+            pass = null;
             transactions = [];
             balance = 0;
-            
-            document.getElementById('appScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-            showLogin();
-            showToast('Logged out successfully');
+            hide('app');
+            show('authBox');
+            document.getElementById('loginUser').value = '';
+            document.getElementById('loginPass').value = '';
         }
 
-        // Add Transaction
-        async function addTransaction(type) {
-            const desc = document.getElementById('description').value.trim();
-            const amt = parseFloat(document.getElementById('amount').value);
-            const cat = document.getElementById('category').value;
+        async function add(type) {
+            const desc = document.getElementById('desc').value.trim();
+            const amt = parseFloat(document.getElementById('amt').value);
+            const cat = document.getElementById('cat').value;
 
             if (!desc || !amt || amt <= 0) {
-                showToast('Please enter valid description and amount', true);
+                alert('Please enter description and amount');
                 return;
             }
 
+            show('loading');
+
             try {
-                showLoading('Adding transaction...');
-                
                 const transaction = {
-                    type,
+                    type: type,
                     description: desc,
                     amount: amt,
                     category: cat,
                     date: new Date().toISOString()
                 };
 
-                const result = await callAPI('addTransaction', {
-                    username: currentUser,
-                    transaction: JSON.stringify(transaction)
+                const response = await fetch(URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'addTransaction',
+                        username: user,
+                        transaction: JSON.stringify(transaction)
+                    })
                 });
 
-                hideLoading();
+                const result = await response.json();
+                hide('loading');
 
                 if (result.success) {
-                    transactions = result.data.transactions || [];
-                    balance = result.data.balance || 0;
-                    
-                    document.getElementById('description').value = '';
-                    document.getElementById('amount').value = '';
-                    
-                    updateDisplay();
-                    showToast(type === 'income' ? 'Income added!' : 'Expense added!');
-                } else {
-                    showToast('Failed to add transaction', true);
+                    transactions = result.transactions;
+                    balance = result.balance;
+                    document.getElementById('desc').value = '';
+                    document.getElementById('amt').value = '';
+                    updateUI();
                 }
             } catch (e) {
-                hideLoading();
-                showToast(e.message, true);
+                hide('loading');
+                alert('Error: ' + e.message);
             }
         }
 
-        // Delete Transaction
-        async function deleteTransaction(index) {
+        async function del(index) {
+            show('loading');
+
             try {
-                showLoading('Deleting...');
-                
-                const result = await callAPI('deleteTransaction', {
-                    username: currentUser,
-                    index: index
+                const response = await fetch(URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'deleteTransaction',
+                        username: user,
+                        index: index
+                    })
                 });
 
-                hideLoading();
+                const result = await response.json();
+                hide('loading');
 
                 if (result.success) {
-                    transactions = result.data.transactions || [];
-                    balance = result.data.balance || 0;
-                    updateDisplay();
-                    showToast('Transaction deleted');
+                    transactions = result.transactions;
+                    balance = result.balance;
+                    updateUI();
                 }
             } catch (e) {
-                hideLoading();
-                showToast(e.message, true);
+                hide('loading');
+                alert('Error: ' + e.message);
             }
         }
 
-        // Update Display
-        function updateDisplay() {
+        function updateUI() {
             document.getElementById('balance').textContent = `₹${balance.toFixed(2)}`;
-            
-            const list = document.getElementById('transactionList');
+
+            const list = document.getElementById('list');
             if (transactions.length === 0) {
-                list.innerHTML = '<div class="empty-state">No transactions yet. Add your first transaction above!</div>';
+                list.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No transactions yet</p>';
                 return;
             }
 
             list.innerHTML = transactions.map((t, i) => `
-                <div class="transaction-item ${t.type}">
+                <div class="transaction ${t.type}">
                     <div>
-                        <div style="font-weight: bold">${t.description}</div>
-                        <div style="font-size: 0.9em; color: #666">${t.category} • ${new Date(t.date).toLocaleDateString()}</div>
+                        <strong>${t.description}</strong><br>
+                        <small style="color: #666">${t.category} • ${new Date(t.date).toLocaleDateString()}</small>
                     </div>
-                    <div style="display: flex; align-items: center">
-                        <div class="transaction-amount ${t.type}">
+                    <div style="display: flex; align-items: center;">
+                        <span class="amount ${t.type}">
                             ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
-                        </div>
-                        <button class="delete-btn" onclick="deleteTransaction(${i})">Delete</button>
+                        </span>
+                        <button class="btn btn-danger small-btn" onclick="del(${i})">×</button>
                     </div>
                 </div>
             `).reverse().join('');
         }
+
+        // Auto login
+        window.onload = async () => {
+            const savedUser = localStorage.getItem('user');
+            const savedPass = localStorage.getItem('pass');
+
+            if (savedUser && savedPass) {
+                document.getElementById('loginUser').value = savedUser;
+                document.getElementById('loginPass').value = savedPass;
+            }
+        };
     </script>
 </body>
 </html>
