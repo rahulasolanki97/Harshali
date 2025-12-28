@@ -54,7 +54,7 @@
         .transaction-date { font-size: 12px; color: #9ca3af; }
         .transaction-amount { font-size: 20px; font-weight: bold; margin-right: 10px; }
         .auth-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-        .auth-card { background: white; border-radius: 15px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+        .auth-card { background: white; border-radius: 15px; padding: 40px; width: 100%; max-width: 450px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
         .auth-card h1 { text-align: center; font-size: 32px; color: #1f2937; margin-bottom: 10px; }
         .auth-card .icon { text-align: center; font-size: 64px; margin-bottom: 20px; }
         .form-group { margin-bottom: 20px; }
@@ -64,15 +64,16 @@
         .alert { padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
         .alert-error { background: #fef2f2; border-left: 4px solid #ef4444; color: #991b1b; }
         .alert-success { background: #f0fdf4; border-left: 4px solid #10b981; color: #166534; white-space: pre-line; }
+        .alert-info { background: #eff6ff; border-left: 4px solid #3b82f6; color: #1e40af; line-height: 1.6; }
         .text-center { text-align: center; }
         .link { color: #4f46e5; cursor: pointer; font-weight: bold; background: none; border: none; text-decoration: underline; }
         .toast { position: fixed; top: 20px; right: 20px; background: #10b981; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; }
         .toast-error { background: #ef4444; }
-        .backup-btn { background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; margin-left: 10px; }
-        .backup-btn:hover { background: #059669; }
-        .backup-section { padding: 20px; background: #eff6ff; border-top: 2px solid #e5e7eb; text-align: center; }
-        .empty { text-align: center; padding: 60px 20px; color: #9ca3af; font-size: 18px; }
         .cloud-badge { background: #10b981; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; display: inline-block; margin-top: 5px; }
+        .empty { text-align: center; padding: 60px 20px; color: #9ca3af; font-size: 18px; }
+        .code-block { background: #1f2937; color: #10b981; padding: 15px; border-radius: 8px; margin: 10px 0; overflow-x: auto; font-family: 'Courier New', monospace; font-size: 12px; max-height: 400px; overflow-y: auto; }
+        .admin-note { background: #fef3c7; border-left: 4px solid #fbbf24; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .admin-note strong { color: #92400e; }
     </style>
 </head>
 <body>
@@ -86,10 +87,14 @@
     </div>
 
     <script>
+        // ⚠️ IMPORTANT: Replace this with your Google Apps Script Web App URL
+        const SCRIPT_URL = 'YOUR_SCRIPT_URL_HERE';
+
         let state = {
             isLoggedIn: false,
             showSignup: false,
             showForgotPassword: false,
+            showAdminSetup: !SCRIPT_URL || SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE',
             currentUser: null,
             userData: { transactions: [], balance: 0 },
             authError: '',
@@ -101,180 +106,53 @@
             category: 'Food'
         };
 
-        function checkCloudStorage() {
-            return window.storage && typeof window.storage.get === 'function';
-        }
-
-        async function saveToCloud(key, value) {
+        async function callAPI(action, data = {}) {
             try {
-                if (!checkCloudStorage()) {
-                    console.error('Cloud storage not available');
-                    return false;
-                }
-                const result = await window.storage.set(key, JSON.stringify(value), false);
-                return result !== null;
-            } catch (e) {
-                console.error('Cloud save error:', e);
-                return false;
-            }
-        }
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, ...data })
+                });
 
-        async function getFromCloud(key) {
-            try {
-                if (!checkCloudStorage()) {
-                    return null;
-                }
-                const result = await window.storage.get(key, false);
-                return result ? JSON.parse(result.value) : null;
-            } catch (e) {
-                console.log('Get from cloud failed:', e);
-                return null;
-            }
-        }
-
-        async function deleteFromCloud(key) {
-            try {
-                if (!checkCloudStorage()) {
-                    return false;
-                }
-                await window.storage.delete(key, false);
-                return true;
-            } catch (e) {
-                return false;
-            }
-        }
-
-        async function exportData() {
-            try {
-                const usersList = await getFromCloud('expense_tracker_users_list') || [];
-                const allData = { users: {}, timestamp: new Date().toISOString() };
+                await new Promise(resolve => setTimeout(resolve, 1500));
                 
-                for (const username of usersList) {
-                    const userData = await getFromCloud(`user_${username}`);
-                    if (userData) {
-                        allData.users[username] = userData;
-                    }
-                }
-                
-                const dataStr = JSON.stringify(allData, null, 2);
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `expense-backup-${new Date().toISOString().split('T')[0]}.json`;
-                link.click();
-                URL.revokeObjectURL(url);
-                showStatus('Backup downloaded successfully!');
-            } catch (e) {
-                showStatus('Failed to export data!', true);
-            }
-        }
-
-        async function importData() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        if (!data.users) {
-                            showStatus('Invalid backup file!', true);
-                            return;
-                        }
-                        if (confirm('This will merge with existing data. Continue?')) {
-                            const usersList = await getFromCloud('expense_tracker_users_list') || [];
-                            
-                            for (const [username, userData] of Object.entries(data.users)) {
-                                await saveToCloud(`user_${username}`, userData);
-                                if (!usersList.includes(username)) {
-                                    usersList.push(username);
-                                }
-                            }
-                            
-                            await saveToCloud('expense_tracker_users_list', usersList);
-                            showStatus('Data imported successfully!');
-                            setTimeout(() => location.reload(), 1500);
-                        }
-                    } catch (err) {
-                        showStatus('Failed to import data!', true);
-                    }
-                };
-                reader.readAsText(file);
-            };
-            input.click();
-        }
-
-        async function migrateOldData() {
-            try {
-                const oldUsers = localStorage.getItem('expense_tracker_users');
-                if (oldUsers) {
-                    const users = JSON.parse(oldUsers);
-                    const usersList = [];
-                    
-                    for (const [username, userData] of Object.entries(users)) {
-                        const oldData = localStorage.getItem(`expense_tracker_data_${username}`);
-                        const transactionsData = oldData ? JSON.parse(oldData) : { transactions: [], balance: 0 };
-                        
-                        await saveToCloud(`user_${username}`, {
-                            email: userData.email,
-                            password: userData.password,
-                            createdAt: userData.createdAt,
-                            data: transactionsData
-                        });
-                        usersList.push(username);
-                    }
-                    
-                    await saveToCloud('expense_tracker_users_list', usersList);
-                    
-                    const oldCurrentUser = localStorage.getItem('expense_tracker_current_user');
-                    if (oldCurrentUser) {
-                        await saveToCloud('expense_tracker_current_user', JSON.parse(oldCurrentUser));
-                    }
-                    
-                    console.log('Migration completed successfully!');
-                }
-            } catch (e) {
-                console.log('No old data to migrate or migration failed:', e);
+                const params = new URLSearchParams({ action, ...data, timestamp: Date.now() });
+                const getResponse = await fetch(`${SCRIPT_URL}?${params}`);
+                const result = await getResponse.json();
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
             }
         }
 
         async function loadAllData() {
-            let retries = 0;
-            const maxRetries = 5;
-            
-            while (retries < maxRetries && !checkCloudStorage()) {
-                console.log('Waiting for cloud storage...', retries);
-                await new Promise(resolve => setTimeout(resolve, 500));
-                retries++;
-            }
-
-            if (!checkCloudStorage()) {
-                console.error('Cloud storage not available after retries');
+            if (state.showAdminSetup) {
                 state.isLoading = false;
-                state.authError = 'Cloud storage is not available. Please refresh the page.';
                 render();
                 return;
             }
 
-            try {
-                await migrateOldData();
-                
-                const currentUser = await getFromCloud('expense_tracker_current_user');
-                if (currentUser) {
-                    const userData = await getFromCloud(`user_${currentUser}`);
-                    if (userData && userData.password) {
-                        state.currentUser = currentUser;
-                        state.userData = userData.data || { transactions: [], balance: 0 };
+            const savedUser = localStorage.getItem('expense_user');
+            const savedPass = localStorage.getItem('expense_pass');
+            
+            if (savedUser && savedPass) {
+                try {
+                    const result = await callAPI('login', { username: savedUser, password: savedPass });
+                    if (result.success) {
+                        state.currentUser = savedUser;
+                        state.userData = result.data || { transactions: [], balance: 0 };
                         state.isLoggedIn = true;
+                    } else {
+                        localStorage.removeItem('expense_user');
+                        localStorage.removeItem('expense_pass');
                     }
+                } catch (e) {
+                    console.error('Auto-login failed:', e);
                 }
-            } catch (e) {
-                console.error('Load error:', e);
             }
+            
             state.isLoading = false;
             render();
         }
@@ -321,42 +199,27 @@
                 return;
             }
 
-            const existingUser = await getFromCloud(`user_${username}`);
-            if (existingUser) {
-                state.authError = 'Username already exists';
-                render();
-                return;
-            }
-
-            const usersList = await getFromCloud('expense_tracker_users_list') || [];
-            for (const uname of usersList) {
-                const udata = await getFromCloud(`user_${uname}`);
-                if (udata && udata.email === email) {
-                    state.authError = 'Email already registered';
+            try {
+                showStatus('Creating account...');
+                const result = await callAPI('signup', { username, email, password });
+                
+                if (result.success) {
+                    state.authSuccess = 'Account created! You can now login from any device.';
+                    state.authError = '';
                     render();
-                    return;
+                    setTimeout(() => {
+                        state.showSignup = false;
+                        state.authSuccess = '';
+                        render();
+                    }, 2000);
+                } else {
+                    state.authError = result.message || 'Signup failed';
+                    render();
                 }
-            }
-
-            const newUser = {
-                email,
-                password,
-                createdAt: new Date().toISOString(),
-                data: { transactions: [], balance: 0 }
-            };
-
-            await saveToCloud(`user_${username}`, newUser);
-            usersList.push(username);
-            await saveToCloud('expense_tracker_users_list', usersList);
-            
-            state.authSuccess = 'Account created! You can now login from any device.';
-            state.authError = '';
-            render();
-            setTimeout(() => {
-                state.showSignup = false;
-                state.authSuccess = '';
+            } catch (e) {
+                state.authError = 'Signup failed. Please try again.';
                 render();
-            }, 2000);
+            }
         }
 
         async function handleLogin() {
@@ -369,37 +232,29 @@
                 return;
             }
 
-            let username = null;
-            let user = null;
-
-            if (isValidEmail(loginInput)) {
-                const usersList = await getFromCloud('expense_tracker_users_list') || [];
-                for (const uname of usersList) {
-                    const udata = await getFromCloud(`user_${uname}`);
-                    if (udata && udata.email === loginInput) {
-                        username = uname;
-                        user = udata;
-                        break;
-                    }
+            try {
+                showStatus('Logging in...');
+                const result = await callAPI('login', { username: loginInput, password });
+                
+                if (result.success) {
+                    state.currentUser = result.username || loginInput;
+                    state.userData = result.data || { transactions: [], balance: 0 };
+                    state.isLoggedIn = true;
+                    state.authError = '';
+                    
+                    localStorage.setItem('expense_user', state.currentUser);
+                    localStorage.setItem('expense_pass', password);
+                    
+                    showStatus(`Welcome back, ${state.currentUser}!`);
+                    render();
+                } else {
+                    state.authError = result.message || 'Invalid credentials';
+                    render();
                 }
-            } else {
-                username = loginInput;
-                user = await getFromCloud(`user_${username}`);
-            }
-
-            if (!user || user.password !== password) {
-                state.authError = 'Invalid username/email or password';
+            } catch (e) {
+                state.authError = 'Login failed. Please try again.';
                 render();
-                return;
             }
-
-            state.currentUser = username;
-            state.userData = user.data || { transactions: [], balance: 0 };
-            state.isLoggedIn = true;
-            state.authError = '';
-            await saveToCloud('expense_tracker_current_user', username);
-            showStatus(`Welcome back, ${username}!`);
-            render();
         }
 
         async function handleForgotPassword() {
@@ -415,38 +270,33 @@
                 return;
             }
 
-            const usersList = await getFromCloud('expense_tracker_users_list') || [];
-            let foundUsername = null;
-            let foundUser = null;
-
-            for (const username of usersList) {
-                const userData = await getFromCloud(`user_${username}`);
-                if (userData && userData.email === email) {
-                    foundUsername = username;
-                    foundUser = userData;
-                    break;
+            try {
+                showStatus('Recovering account...');
+                const result = await callAPI('forgotPassword', { email });
+                
+                if (result.success) {
+                    state.authSuccess = `Your credentials:\nUsername: ${result.username}\nPassword: ${result.password}`;
+                    state.authError = '';
+                    render();
+                    setTimeout(() => {
+                        state.showForgotPassword = false;
+                        state.authSuccess = '';
+                        render();
+                    }, 8000);
+                } else {
+                    state.authError = result.message || 'No account found with this email';
+                    render();
                 }
-            }
-
-            if (!foundUsername) {
-                state.authError = 'No account found with this email';
+            } catch (e) {
+                state.authError = 'Recovery failed. Please try again.';
                 render();
-                return;
             }
-
-            state.authSuccess = `Your password is: ${foundUser.password}\n\nUsername: ${foundUsername}`;
-            state.authError = '';
-            render();
-            setTimeout(() => {
-                state.showForgotPassword = false;
-                state.authSuccess = '';
-                render();
-            }, 8000);
         }
 
-        async function handleLogout() {
+        function handleLogout() {
             if (confirm('Are you sure you want to logout?')) {
-                await deleteFromCloud('expense_tracker_current_user');
+                localStorage.removeItem('expense_user');
+                localStorage.removeItem('expense_pass');
                 state.isLoggedIn = false;
                 state.currentUser = null;
                 state.userData = { transactions: [], balance: 0 };
@@ -474,28 +324,42 @@
                 ? state.userData.balance + parseFloat(state.amount)
                 : state.userData.balance - parseFloat(state.amount);
 
-            const user = await getFromCloud(`user_${state.currentUser}`);
-            user.data = state.userData;
-            await saveToCloud(`user_${state.currentUser}`, user);
-            
-            state.description = '';
-            state.amount = '';
-            render();
+            try {
+                await callAPI('addTransaction', {
+                    username: state.currentUser,
+                    transaction,
+                    balance: state.userData.balance
+                });
+                
+                state.description = '';
+                state.amount = '';
+                render();
+            } catch (e) {
+                showStatus('Failed to save transaction', true);
+            }
         }
 
         async function deleteTransaction(id) {
             const t = state.userData.transactions.find(t => t.id === id);
             if (!t) return;
 
+            if (!confirm('Delete this transaction?')) return;
+
             state.userData.balance = t.type === 'income'
                 ? state.userData.balance - t.amount
                 : state.userData.balance + t.amount;
             state.userData.transactions = state.userData.transactions.filter(t => t.id !== id);
             
-            const user = await getFromCloud(`user_${state.currentUser}`);
-            user.data = state.userData;
-            await saveToCloud(`user_${state.currentUser}`, user);
-            render();
+            try {
+                await callAPI('deleteTransaction', {
+                    username: state.currentUser,
+                    transactionId: id,
+                    balance: state.userData.balance
+                });
+                render();
+            } catch (e) {
+                showStatus('Failed to delete transaction', true);
+            }
         }
 
         function calculateSummaries() {
@@ -535,6 +399,161 @@
                 return;
             }
 
+            if (state.showAdminSetup) {
+                app.innerHTML = `
+                    <div class="auth-page">
+                        <div class="auth-card" style="max-width: 700px;">
+                            <div class="icon">⚙️</div>
+                            <h1>Admin Setup Required</h1>
+                            <p class="text-center" style="color: #6b7280; margin-bottom: 20px;">Setup your Google Sheets backend (One-time setup)</p>
+                            
+                            <div class="admin-note">
+                                <strong>📋 For Site Owner Only:</strong><br>
+                                Follow these steps to setup the backend. Users won't need to do this!
+                            </div>
+
+                            <div class="alert alert-info">
+                                <strong>Setup Steps:</strong><br>
+                                1. <a href="https://sheets.new" target="_blank" style="color: #2563eb;">Create a new Google Sheet</a><br>
+                                2. Go to <strong>Extensions → Apps Script</strong><br>
+                                3. Copy the code below and paste it<br>
+                                4. Click <strong>Deploy → New deployment</strong><br>
+                                5. Choose: <strong>Web app</strong><br>
+                                6. Execute as: <strong>Me</strong><br>
+                                7. Who has access: <strong>Anyone</strong><br>
+                                8. Copy the Web App URL<br>
+                                9. Replace <strong>YOUR_SCRIPT_URL_HERE</strong> in the code with your URL
+                            </div>
+
+                            <div class="form-group">
+                                <label>Google Apps Script Code:</label>
+                                <div class="code-block">function doGet(e) {
+  const userSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users') || SpreadsheetApp.getActiveSpreadsheet().insertSheet('Users');
+  const txSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Transactions') || SpreadsheetApp.getActiveSpreadsheet().insertSheet('Transactions');
+  
+  if (userSheet.getLastRow() === 0) {
+    userSheet.appendRow(['Username', 'Email', 'Password', 'CreatedAt']);
+  }
+  if (txSheet.getLastRow() === 0) {
+    txSheet.appendRow(['Username', 'TransactionID', 'Type', 'Description', 'Amount', 'Category', 'Date']);
+  }
+  
+  const action = e.parameter.action;
+  
+  if (action === 'login') {
+    const username = e.parameter.username;
+    const password = e.parameter.password;
+    const users = userSheet.getDataRange().getValues();
+    
+    for (let i = 1; i < users.length; i++) {
+      if ((users[i][0] === username || users[i][1] === username) && users[i][2] === password) {
+        const txData = txSheet.getDataRange().getValues();
+        const transactions = [];
+        let balance = 0;
+        
+        for (let j = 1; j < txData.length; j++) {
+          if (txData[j][0] === users[i][0]) {
+            transactions.push({
+              id: txData[j][1],
+              type: txData[j][2],
+              description: txData[j][3],
+              amount: parseFloat(txData[j][4]),
+              category: txData[j][5],
+              date: txData[j][6]
+            });
+            balance += txData[j][2] === 'income' ? parseFloat(txData[j][4]) : -parseFloat(txData[j][4]);
+          }
+        }
+        
+        return ContentService.createTextOutput(JSON.stringify({
+          success: true,
+          username: users[i][0],
+          data: { transactions: transactions.reverse(), balance }
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Invalid credentials' })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  if (action === 'forgotPassword') {
+    const email = e.parameter.email;
+    const users = userSheet.getDataRange().getValues();
+    
+    for (let i = 1; i < users.length; i++) {
+      if (users[i][1] === email) {
+        return ContentService.createTextOutput(JSON.stringify({
+          success: true,
+          username: users[i][0],
+          password: users[i][2]
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({ success: false })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({ success: false })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  const userSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users') || SpreadsheetApp.getActiveSpreadsheet().insertSheet('Users');
+  const txSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Transactions') || SpreadsheetApp.getActiveSpreadsheet().insertSheet('Transactions');
+  
+  if (userSheet.getLastRow() === 0) {
+    userSheet.appendRow(['Username', 'Email', 'Password', 'CreatedAt']);
+  }
+  if (txSheet.getLastRow() === 0) {
+    txSheet.appendRow(['Username', 'TransactionID', 'Type', 'Description', 'Amount', 'Category', 'Date']);
+  }
+  
+  const data = JSON.parse(e.postData.contents);
+  const action = data.action;
+  
+  if (action === 'signup') {
+    const users = userSheet.getDataRange().getValues();
+    
+    for (let i = 1; i < users.length; i++) {
+      if (users[i][0] === data.username) {
+        return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Username already exists' })).setMimeType(ContentService.MimeType.JSON);
+      }
+      if (users[i][1] === data.email) {
+        return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Email already registered' })).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    
+    userSheet.appendRow([data.username, data.email, data.password, new Date().toISOString()]);
+    return ContentService.createTextOutput(JSON.stringify({ success: true })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  if (action === 'addTransaction') {
+    const tx = data.transaction;
+    txSheet.appendRow([data.username, tx.id, tx.type, tx.description, tx.amount, tx.category, tx.date]);
+    return ContentService.createTextOutput(JSON.stringify({ success: true })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  if (action === 'deleteTransaction') {
+    const txData = txSheet.getDataRange().getValues();
+    for (let i = 1; i < txData.length; i++) {
+      if (txData[i][0] === data.username && txData[i][1] == data.transactionId) {
+        txSheet.deleteRow(i + 1);
+        break;
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({ success: true })).setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify({ success: false })).setMimeType(ContentService.MimeType.JSON);
+}</div>
+                            </div>
+
+                            <div class="alert alert-error">
+                                <strong>⚠️ Important:</strong> After deploying, update the <strong>SCRIPT_URL</strong> variable at the top of this HTML file with your Web App URL.
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
             if (!state.isLoggedIn) {
                 app.innerHTML = `
                     <div class="auth-page">
@@ -568,9 +587,6 @@
                                     Don't have an account? 
                                     <button class="link" onclick="state.showSignup = true; state.authError = ''; state.authSuccess = ''; render();">Sign Up</button>
                                 </div>
-                                <div class="text-center" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-                                    <button class="link" onclick="importData()">📁 Import Backup</button>
-                                </div>
                             ` : ''}
 
                             ${state.showSignup ? `
@@ -590,102 +606,4 @@
                                     <label>Confirm Password</label>
                                     <input type="password" id="signupPasswordConfirm" placeholder="Confirm password">
                                 </div>
-                                <button class="btn btn-secondary" style="width: 100%; margin-bottom: 15px;" onclick="handleSignup()">Sign Up</button>
-                                <div class="text-center">
-                                    Already have an account? 
-                                    <button class="link" onclick="state.showSignup = false; state.authError = ''; state.authSuccess = ''; render();">Login</button>
-                                </div>
-                            ` : ''}
-
-                            ${state.showForgotPassword ? `
-                                <h2 style="font-size: 20px; margin-bottom: 10px;">Forgot Password?</h2>
-                                <p style="font-size: 14px; color: #6b7280; margin-bottom: 20px;">Enter your email to recover your account</p>
-                                <div class="form-group">
-                                    <label>Email Address</label>
-                                    <input type="email" id="forgotEmail" placeholder="Enter registered email">
-                                </div>
-                                <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="handleForgotPassword()">Recover Account</button>
-                                <div class="text-center">
-                                    Remember your password? 
-                                    <button class="link" onclick="state.showForgotPassword = false; state.authError = ''; state.authSuccess = ''; render();">Back to Login</button>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-
-            const summaries = calculateSummaries();
-            const icons = { daily: '📅', weekly: '📊', monthly: '📈', yearly: '📆' };
-
-            app.innerHTML = `
-                <div class="container">
-                    ${state.statusMessage ? `<div class="toast ${state.statusMessage.isError ? 'toast-error' : ''}">${state.statusMessage.text}</div>` : ''}
-                    
-                    <div class="card">
-                        <div class="header">
-                            <button class="logout-btn" onclick="handleLogout()">Logout</button>
-                            <h1>💰 Expense Tracker</h1>
-                            <p>Manage your daily finances</p>
-                            <span class="cloud-badge" style="position: absolute; top: 65px; right: 20px; font-size: 11px;">☁️ Cloud Synced</span>
-                            <span class="user-badge">${state.currentUser}</span>
-                            <button class="backup-btn" onclick="exportData()" style="position: absolute; top: 20px; left: 100px;">💾 Export</button>
-                            <button class="backup-btn" onclick="importData()" style="position: absolute; top: 60px; left: 100px;">📥 Import</button>
-                        </div>
-
-                        <div class="balance">
-                            <div>Current Balance</div>
-                            <div class="balance-amount">₹${state.userData.balance.toFixed(2)}</div>
-                        </div>
-
-                        <div class="summary-grid">
-                            ${Object.entries(summaries).map(([period, data]) => `
-                                <div class="summary-card">
-                                    <div class="summary-title">${icons[period]} ${period.charAt(0).toUpperCase() + period.slice(1)}</div>
-                                    <div class="summary-row">
-                                        <span>Income:</span>
-                                        <span class="text-green">₹${data.income.toFixed(2)}</span>
-                                    </div>
-                                    <div class="summary-row">
-                                        <span>Expenses:</span>
-                                        <span class="text-red">₹${data.expense.toFixed(2)}</span>
-                                    </div>
-                                    <div class="summary-row" style="padding-top: 10px; border-top: 1px solid #e5e7eb;">
-                                        <span>Net:</span>
-                                        <span class="text-blue">₹${data.net.toFixed(2)}</span>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-
-                        <div class="input-section">
-                            <div class="input-row">
-                                <input type="text" id="description" value="${state.description}" placeholder="Description" oninput="state.description = this.value">
-                                <input type="number" id="amount" value="${state.amount}" placeholder="Amount" step="0.01" oninput="state.amount = this.value">
-                                <select id="category" onchange="state.category = this.value">
-                                    <option value="Food">Food</option>
-                                    <option value="EMI">EMI</option>
-                                    <option value="Online shopping">Online shopping</option>
-                                    <option value="Donations">Donations</option>
-                                    <option value="Fuel">Fuel</option>
-                                    <option value="Cash expenses">Cash expenses</option>
-                                    <option value="Recharges">Recharges</option>
-                                    <option value="Transport">Transport</option>
-                                    <option value="Shopping">Shopping</option>
-                                    <option value="Bills">Bills</option>
-                                    <option value="Entertainment">Entertainment</option>
-                                    <option value="Health">Health</option>
-                                    <option value="Salary">Salary</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div class="btn-row">
-                                <button class="btn btn-secondary" onclick="addTransaction('income')">💰 Add Money</button>
-                                <button class="btn btn-primary" onclick="addTransaction('expense')">💸 Add Expense</button>
-                            </div>
-                        </div>
-
-                        <div class="transactions">
-                            <h2>Recent Transactions</h2>
-                            <div class="
+                                <button class="btn
