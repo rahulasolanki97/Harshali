@@ -138,6 +138,13 @@
             justify-content: space-between;
             align-items: center;
         }
+        .back-link {
+            color: #2563eb;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -162,6 +169,9 @@
             <input type="password" class="input" id="loginPass" placeholder="Password">
             <button class="btn btn-primary" onclick="login()">Login</button>
             <div class="link">
+                <a onclick="showForgotPassword()">Forgot Password?</a>
+            </div>
+            <div class="link">
                 Don't have an account? <a onclick="toggleAuth()">Sign Up</a>
             </div>
         </div>
@@ -176,6 +186,32 @@
             <div class="link">
                 Already have an account? <a onclick="toggleAuth()">Login</a>
             </div>
+        </div>
+
+        <!-- Forgot Password Form - Step 1 -->
+        <div id="forgotPasswordForm" class="hidden">
+            <a class="back-link" onclick="showLogin()">← Back to Login</a>
+            <h2 style="margin-bottom: 15px; color: #333;">Reset Password</h2>
+            <p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">
+                Enter your username and email. We'll send you a reset code.
+            </p>
+            <input type="text" class="input" id="forgotUser" placeholder="Username">
+            <input type="email" class="input" id="forgotEmail" placeholder="Email">
+            <button class="btn btn-primary" onclick="sendResetCode()">Send Reset Code</button>
+        </div>
+
+        <!-- Reset Password Form - Step 2 -->
+        <div id="resetPasswordForm" class="hidden">
+            <a class="back-link" onclick="showLogin()">← Back to Login</a>
+            <h2 style="margin-bottom: 15px; color: #333;">Enter Reset Code</h2>
+            <p style="color: #666; margin-bottom: 15px; font-size: 0.9em;">
+                Check your email for the 6-digit reset code.
+            </p>
+            <input type="text" class="input" id="resetUser" placeholder="Username" readonly>
+            <input type="text" class="input" id="resetCode" placeholder="6-Digit Reset Code" maxlength="6">
+            <input type="password" class="input" id="newPassword" placeholder="New Password (min 6 chars)">
+            <input type="password" class="input" id="confirmNewPassword" placeholder="Confirm New Password">
+            <button class="btn btn-primary" onclick="resetPassword()">Reset Password</button>
         </div>
     </div>
 
@@ -217,13 +253,14 @@
     </div>
 
     <script>
-        // ✅ YOUR GOOGLE APPS SCRIPT URL IS CONFIGURED
-        const URL = 'https://script.google.com/macros/s/AKfycbzyMFUN0ft8WyxkbJXkhTKikJEdsfgY8UaW0_wJt3zsitfqaEvolg_7pStKKArAMttz/exec';
+        // ✅ UPDATED GOOGLE APPS SCRIPT URL
+        const URL = 'https://script.google.com/macros/s/AKfycbybHNfXxK-v--b-CGv5vjEDSdaUq41LNfVSxGCDYtoDr3-OYMw2wZWsTU2QXQX-kPHs/exec';
 
         let user = null;
         let pass = null;
         let transactions = [];
         let balance = 0;
+        let tempResetUsername = '';
 
         function show(id) { document.getElementById(id).classList.remove('hidden'); }
         function hide(id) { document.getElementById(id).classList.add('hidden'); }
@@ -247,6 +284,113 @@
             document.getElementById('signupForm').classList.toggle('hidden');
             document.getElementById('error').style.display = 'none';
             document.getElementById('success').style.display = 'none';
+        }
+
+        function showLogin() {
+            hide('forgotPasswordForm');
+            hide('resetPasswordForm');
+            show('loginForm');
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }
+
+        function showForgotPassword() {
+            hide('loginForm');
+            hide('signupForm');
+            show('forgotPasswordForm');
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }
+
+        async function sendResetCode() {
+            const username = document.getElementById('forgotUser').value.trim();
+            const email = document.getElementById('forgotEmail').value.trim();
+
+            if (!username || !email) {
+                showError('Please enter username and email');
+                return;
+            }
+
+            show('loading');
+
+            try {
+                const resetUrl = `${URL}?action=verifyUser&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`;
+                
+                const response = await fetch(resetUrl);
+                const text = await response.text();
+                const result = JSON.parse(text);
+
+                hide('loading');
+
+                if (result.success) {
+                    tempResetUsername = username;
+                    document.getElementById('resetUser').value = username;
+                    hide('forgotPasswordForm');
+                    show('resetPasswordForm');
+                    showSuccess(result.message);
+                } else {
+                    showError(result.message);
+                }
+            } catch (e) {
+                hide('loading');
+                console.error('Reset code error:', e);
+                showError('Error: ' + e.message);
+            }
+        }
+
+        async function resetPassword() {
+            const username = document.getElementById('resetUser').value.trim();
+            const resetCode = document.getElementById('resetCode').value.trim();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmNewPassword').value;
+
+            if (!resetCode || !newPassword || !confirmPassword) {
+                showError('Please fill all fields');
+                return;
+            }
+
+            if (resetCode.length !== 6) {
+                showError('Reset code must be 6 digits');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showError('Password must be at least 6 characters');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            show('loading');
+
+            try {
+                const resetUrl = `${URL}?action=resetPassword&username=${encodeURIComponent(username)}&resetCode=${encodeURIComponent(resetCode)}&newPassword=${encodeURIComponent(newPassword)}`;
+                
+                const response = await fetch(resetUrl);
+                const text = await response.text();
+                const result = JSON.parse(text);
+
+                hide('loading');
+
+                if (result.success) {
+                    showSuccess(result.message);
+                    document.getElementById('forgotUser').value = '';
+                    document.getElementById('forgotEmail').value = '';
+                    document.getElementById('resetCode').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmNewPassword').value = '';
+                    setTimeout(showLogin, 2000);
+                } else {
+                    showError(result.message);
+                }
+            } catch (e) {
+                hide('loading');
+                console.error('Reset password error:', e);
+                showError('Error: ' + e.message);
+            }
         }
 
         async function signup() {
@@ -361,6 +505,7 @@
             balance = 0;
             hide('app');
             show('authBox');
+            showLogin();
             document.getElementById('loginUser').value = '';
             document.getElementById('loginPass').value = '';
         }
@@ -480,4 +625,3 @@
     </script>
 </body>
 </html>
-
