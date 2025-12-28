@@ -945,6 +945,428 @@ function doPost(e) {
             const savedUrl = localStorage.getItem('expense_script_url');
             if (savedUrl) {
                 SCRIPT_URL = savedUrl;
+                document.getElementById('setupScreen').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
                 checkAutoLogin();
             } else {
-                document.getElementById('scriptCode').textContent
+                document.getElementById('scriptCode').textContent = APPS_SCRIPT_CODE;
+            }
+        }
+
+        // Save configuration
+        function saveConfig() {
+            const url = document.getElementById('scriptUrl').value.trim();
+            if (!url) {
+                showStatus('Please enter a valid URL', true);
+                return;
+            }
+            if (!url.includes('script.google.com')) {
+                showStatus('Invalid Google Apps Script URL', true);
+                return;
+            }
+            
+            localStorage.setItem('expense_script_url', url);
+            SCRIPT_URL = url;
+            
+            document.getElementById('setupScreen').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            showStatus('Configuration saved successfully!');
+        }
+
+        // API Call Helper
+        async function callAPI(action, data = {}) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, ...data })
+                });
+
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                const params = new URLSearchParams({ action, ...data, timestamp: Date.now() });
+                const getResponse = await fetch(`${SCRIPT_URL}?${params}`);
+                const result = await getResponse.json();
+                return result;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Show/hide loading
+        function showLoading(text = 'Loading...') {
+            document.getElementById('loadingText').textContent = text;
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        // Show status toast
+        function showStatus(message, isError = false) {
+            const toast = document.getElementById('statusToast');
+            toast.textContent = message;
+            toast.className = 'status-toast' + (isError ? ' error' : '');
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Auth UI functions
+        function showLogin() {
+            document.getElementById('loginForm').classList.remove('hidden');
+            document.getElementById('signupForm').classList.add('hidden');
+            clearAuthMessages();
+        }
+
+        function showSignup() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('signupForm').classList.remove('hidden');
+            clearAuthMessages();
+        }
+
+        function clearAuthMessages() {
+            document.getElementById('authError').style.display = 'none';
+            document.getElementById('authSuccess').style.display = 'none';
+        }
+
+        function showAuthError(message) {
+            const errorEl = document.getElementById('authError');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            document.getElementById('authSuccess').style.display = 'none';
+        }
+
+        function showAuthSuccess(message) {
+            const successEl = document.getElementById('authSuccess');
+            successEl.textContent = message;
+            successEl.style.display = 'block';
+            document.getElementById('authError').style.display = 'none';
+        }
+
+        // Signup
+        async function signup() {
+            const username = document.getElementById('signupUsername').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupPasswordConfirm').value;
+
+            if (!username || !email || !password) {
+                showAuthError('Please fill in all fields');
+                return;
+            }
+
+            if (username.length < 3) {
+                showAuthError('Username must be at least 3 characters');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                showAuthError('Please enter a valid email');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAuthError('Password must be at least 6 characters');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAuthError('Passwords do not match');
+                return;
+            }
+
+            try {
+                document.getElementById('signupBtn').disabled = true;
+                showLoading('Creating account...');
+                
+                const result = await callAPI('signup', { username, email, password });
+                
+                hideLoading();
+                document.getElementById('signupBtn').disabled = false;
+                
+                if (result.success) {
+                    showAuthSuccess('Account created successfully! You can now login from any device.');
+                    document.getElementById('signupUsername').value = '';
+                    document.getElementById('signupEmail').value = '';
+                    document.getElementById('signupPassword').value = '';
+                    document.getElementById('signupPasswordConfirm').value = '';
+                    
+                    setTimeout(() => {
+                        showLogin();
+                    }, 2000);
+                } else {
+                    showAuthError(result.message || 'Signup failed');
+                }
+            } catch (e) {
+                hideLoading();
+                document.getElementById('signupBtn').disabled = false;
+                showAuthError('Network error. Please try again.');
+            }
+        }
+
+        // Login
+        async function login() {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                showAuthError('Please enter username/email and password');
+                return;
+            }
+
+            try {
+                document.getElementById('loginBtn').disabled = true;
+                showLoading('Logging in...');
+                
+                const result = await callAPI('login', { username, password });
+                
+                hideLoading();
+                document.getElementById('loginBtn').disabled = false;
+                
+                if (result.success) {
+                    currentUser = result.username || username;
+                    transactions = result.data.transactions || [];
+                    balance = result.data.balance || 0;
+                    
+                    localStorage.setItem('expense_user', currentUser);
+                    localStorage.setItem('expense_pass', password);
+                    
+                    document.getElementById('loginUsername').value = '';
+                    document.getElementById('loginPassword').value = '';
+                    
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('appScreen').classList.remove('hidden');
+                    document.getElementById('currentUsername').textContent = currentUser;
+                    
+                    updateDisplay();
+                    showStatus('Welcome back, ' + currentUser + '!');
+                } else {
+                    showAuthError(result.message || 'Invalid credentials');
+                }
+            } catch (e) {
+                hideLoading();
+                document.getElementById('loginBtn').disabled = false;
+                showAuthError('Network error. Please try again.');
+            }
+        }
+
+        // Auto login
+        async function checkAutoLogin() {
+            const savedUser = localStorage.getItem('expense_user');
+            const savedPass = localStorage.getItem('expense_pass');
+            
+            if (savedUser && savedPass) {
+                try {
+                    showLoading('Auto-logging in...');
+                    const result = await callAPI('login', { username: savedUser, password: savedPass });
+                    
+                    hideLoading();
+                    
+                    if (result.success) {
+                        currentUser = result.username || savedUser;
+                        transactions = result.data.transactions || [];
+                        balance = result.data.balance || 0;
+                        
+                        document.getElementById('loginScreen').classList.add('hidden');
+                        document.getElementById('appScreen').classList.remove('hidden');
+                        document.getElementById('currentUsername').textContent = currentUser;
+                        
+                        updateDisplay();
+                    } else {
+                        localStorage.removeItem('expense_user');
+                        localStorage.removeItem('expense_pass');
+                    }
+                } catch (e) {
+                    hideLoading();
+                    console.error('Auto-login failed:', e);
+                }
+            }
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                currentUser = null;
+                transactions = [];
+                balance = 0;
+                
+                localStorage.removeItem('expense_user');
+                localStorage.removeItem('expense_pass');
+                
+                document.getElementById('appScreen').classList.add('hidden');
+                document.getElementById('loginScreen').classList.remove('hidden');
+                showLogin();
+            }
+        }
+
+        // Add transaction
+        async function addTransaction(type) {
+            const description = document.getElementById('description').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const category = document.getElementById('category').value;
+
+            if (!description || !amount || amount <= 0) {
+                showStatus('Please enter valid description and amount!', true);
+                return;
+            }
+
+            const transaction = {
+                id: Date.now(),
+                type: type,
+                description: description,
+                amount: amount,
+                category: category,
+                date: new Date().toISOString()
+            };
+
+            try {
+                showLoading('Saving transaction...');
+                
+                await callAPI('addTransaction', {
+                    username: currentUser,
+                    transaction: transaction
+                });
+                
+                transactions.unshift(transaction);
+                
+                if (type === 'income') {
+                    balance += amount;
+                } else {
+                    balance -= amount;
+                }
+
+                document.getElementById('description').value = '';
+                document.getElementById('amount').value = '';
+
+                hideLoading();
+                updateDisplay();
+                showStatus('Transaction added successfully!');
+            } catch (e) {
+                hideLoading();
+                showStatus('Failed to save transaction', true);
+            }
+        }
+
+        // Delete transaction
+        async function deleteTransaction(id) {
+            if (!confirm('Delete this transaction?')) return;
+
+            const transaction = transactions.find(t => t.id === id);
+            if (!transaction) return;
+
+            try {
+                showLoading('Deleting transaction...');
+                
+                await callAPI('deleteTransaction', {
+                    username: currentUser,
+                    transactionId: id
+                });
+                
+                if (transaction.type === 'income') {
+                    balance -= transaction.amount;
+                } else {
+                    balance += transaction.amount;
+                }
+
+                transactions = transactions.filter(t => t.id !== id);
+                
+                hideLoading();
+                updateDisplay();
+                showStatus('Transaction deleted');
+            } catch (e) {
+                hideLoading();
+                showStatus('Failed to delete transaction', true);
+            }
+        }
+
+        // Update display
+        function updateDisplay() {
+            updateBalance();
+            updateSummaries();
+            updateTransactionList();
+        }
+
+        // Update balance
+        function updateBalance() {
+            document.getElementById('balance').textContent = `₹${balance.toFixed(2)}`;
+        }
+
+        // Calculate summaries
+        function updateSummaries() {
+            const now = new Date();
+            const periods = {
+                daily: 1,
+                weekly: 7,
+                monthly: 30,
+                yearly: 365
+            };
+
+            Object.keys(periods).forEach(period => {
+                const days = periods[period];
+                const cutoffDate = new Date(now.getTime() - (days * 24 * 60 * 60 * 1000));
+                
+                let income = 0;
+                let expense = 0;
+
+                transactions.forEach(t => {
+                    const tDate = new Date(t.date);
+                    if (tDate >= cutoffDate) {
+                        if (t.type === 'income') {
+                            income += t.amount;
+                        } else {
+                            expense += t.amount;
+                        }
+                    }
+                });
+
+                const net = income - expense;
+
+                document.getElementById(`${period}Income`).textContent = `₹${income.toFixed(2)}`;
+                document.getElementById(`${period}Expense`).textContent = `₹${expense.toFixed(2)}`;
+                document.getElementById(`${period}Net`).textContent = `₹${net.toFixed(2)}`;
+            });
+        }
+
+        // Update transaction list
+        function updateTransactionList() {
+            const listEl = document.getElementById('transactionList');
+            
+            if (transactions.length === 0) {
+                listEl.innerHTML = '<div class="empty-state">No transactions yet. Add your first transaction above!</div>';
+                return;
+            }
+
+            listEl.innerHTML = transactions.map(t => {
+                const date = new Date(t.date);
+                const dateStr = date.toLocaleDateString('en-IN', { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                return `
+                    <div class="transaction-item ${t.type}">
+                        <div class="transaction-details">
+                            <div class="transaction-description">${t.description}</div>
+                            <div class="transaction-category">${t.category}</div>
+                            <div class="transaction-date">${dateStr}</div>
+                        </div>
+                        <div class="transaction-amount ${t.type}">
+                            ${t.type === 'income' ? '+' : '-'}₹${t.amount.toFixed(2)}
+                        </div>
+                        <button class="delete-btn" onclick="deleteTransaction(${t.id})">Delete</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Initialize app
+        init()
